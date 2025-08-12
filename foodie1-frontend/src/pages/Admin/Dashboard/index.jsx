@@ -56,11 +56,9 @@ const Dashboard = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            console.log('Bắt đầu fetch dữ liệu...');
             try {
-                const [
-                    userRes, foodRes, totalOrdersRes,
-                    weeklyStatsRes, todayRevenueRes, todayOrdersRes
-                ] = await Promise.all([
+                const responses = await Promise.all([
                     UserService.getAllUsers(),
                     FoodItemsService.getAllFoods(),
                     OrderService.getTotalOrders(),
@@ -68,6 +66,12 @@ const Dashboard = () => {
                     OrderService.getTodayRevenue(),
                     OrderService.getOrdersToday()
                 ]);
+
+                // Log tất cả responses để debug
+                console.log('Responses từ API:', responses);
+
+                // Gán lại tên biến cho rõ ràng
+                const [userRes, foodRes, totalOrdersRes, weeklyStatsRes, todayRevenueRes, todayOrdersRes] = responses;
 
                 setStats((prev) => {
                     const updated = [...prev];
@@ -105,7 +109,9 @@ const Dashboard = () => {
                     : [];
 
                 // Đảm bảo chartData luôn là mảng
-                setChartData(Array.isArray(chart) ? chart : []);
+                const safeChartData = Array.isArray(chart) ? chart : [];
+                console.log('Dữ liệu biểu đồ sau khi xử lý:', safeChartData);
+                setChartData(safeChartData);
 
                 // Xử lý dữ liệu đơn hàng gần đây
                 const orders = Array.isArray(todayOrdersRes?.data) 
@@ -122,10 +128,22 @@ const Dashboard = () => {
                     items: Array.isArray(order.items) ? order.items : []
                 }));
                 
+                console.log('Dữ liệu đơn hàng sau khi xử lý:', safeOrders);
                 setRecentOrders(safeOrders);
 
             } catch (err) {
-                console.error("Lỗi khi fetch dữ liệu:", err);
+                console.error("Lỗi khi fetch dữ liệu:", {
+                    message: err.message,
+                    stack: err.stack,
+                    response: err.response?.data
+                });
+                // Đặt giá trị mặc định cho tất cả state
+                setChartData([]);
+                setRecentOrders([]);
+                setStats(prev => prev.map(stat => ({
+                    ...stat,
+                    value: stat.label.includes('Doanh thu') ? '0₫' : '0'
+                })));
             } finally {
                 setLoading(false);
             }
@@ -209,8 +227,13 @@ const Dashboard = () => {
     };
 
     const StatCard = ({ item }) => {
-        if (!item) return null;
+        // Kiểm tra item có tồn tại và là object không
+        if (!item || typeof item !== 'object') {
+            console.warn('StatCard: item không hợp lệ');
+            return null;
+        }
         
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const [isHovered, setIsHovered] = useState(false);
         const IconComponent = item.icon || (() => null);
         const trendText = item.trend || "";
@@ -259,7 +282,11 @@ const Dashboard = () => {
 
     // Sửa lại OrderItem: click sẽ mở modal, hiển thị trạng thái, tên món, tổng tiền
     const OrderItem = ({ order }) => {
-        if (!order) return null;
+        // Kiểm tra order có tồn tại và là object không
+        if (!order || typeof order !== 'object') {
+            console.warn('Order không hợp lệ:', order);
+            return null;
+        }
         
         const statusConfig = getStatusConfig(order.status || 'pending');
         const StatusIcon = statusConfig?.icon || AlertCircle;
@@ -332,6 +359,11 @@ const Dashboard = () => {
         );
     }
 
+    // Đảm bảo chartData luôn là mảng trước khi render
+    const safeChartData = Array.isArray(chartData) ? chartData : [];
+    const safeRecentOrders = Array.isArray(recentOrders) ? recentOrders : [];
+    const safeStats = Array.isArray(stats) ? stats : [];
+
     return (
         <div style={styles.container}>
             <div style={{ marginBottom: "32px" }}>
@@ -344,7 +376,7 @@ const Dashboard = () => {
             </div>
 
             <div style={{ ...styles.grid, ...styles.gridCols4 }}>
-                {stats.map((item, index) => (
+                {safeStats.map((item, index) => (
                     <StatCard key={index} item={item} />
                 ))}
             </div>
@@ -361,7 +393,7 @@ const Dashboard = () => {
                     </div>
                     <div style={{ height: "280px" }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData}>
+                            <BarChart data={safeChartData}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.8} />
@@ -418,9 +450,9 @@ const Dashboard = () => {
                         border: `1px solid ${theme.palette.divider}`,
                         borderRadius: "8px"
                     }}>
-                        {recentOrders.length > 0 ? (
-                            recentOrders.map((order, index) => (
-                                <OrderItem key={order.id || index} order={order} />
+                        {safeRecentOrders.length > 0 ? (
+                            safeRecentOrders.map((order, index) => (
+                                <OrderItem key={order?.id || index} order={order} />
                             ))
                         ) : (
                             <div style={{
