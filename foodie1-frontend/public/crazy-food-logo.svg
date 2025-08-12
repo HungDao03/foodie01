@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Vòng tròn nền -->
+    <circle cx="100" cy="100" r="90" fill="#FF6B6B"/>
+    
+    <!-- Text "CRAZY FOOD" -->
+    <text x="100" y="110" 
+          font-family="Arial Black, sans-serif" 
+          font-size="24" 
+          fill="white" 
+          text-anchor="middle" 
+          font-weight="bold">
+        CRAZY FOOD
+    </text>
+    
+    <!-- Biểu tượng đũa và bát -->
+    <path d="M70 70 Q100 40 130 70" 
+          stroke="white" 
+          stroke-width="8" 
+          fill="none"/>
+    <path d="M60 90 Q100 120 140 90" 
+          stroke="white" 
+          stroke-width="8" 
+          fill="none"/>
+</svg> 
