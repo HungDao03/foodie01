@@ -93,18 +93,36 @@ const Dashboard = () => {
                     ? weeklyStatsRes.data 
                     : weeklyStatsRes?.data?.data || [];
 
-                const chart = orderedDays.map(day => {
-                    const item = rawData.find(d => d.day === day) || { day, totalRevenue: 0 };
-                    return {
-                        name: dayMap[day] || day,
-                        revenue: item.totalRevenue || 0
-                    };
-                });
+                // Đảm bảo rawData là mảng trước khi sử dụng map
+                const chart = Array.isArray(rawData) 
+                    ? orderedDays.map(day => {
+                        const item = rawData.find(d => d && d.day === day) || { day, totalRevenue: 0 };
+                        return {
+                            name: dayMap[day] || day,
+                            revenue: item && typeof item.totalRevenue !== 'undefined' ? item.totalRevenue : 0
+                        };
+                    })
+                    : [];
 
-                setChartData(chart);
+                // Đảm bảo chartData luôn là mảng
+                setChartData(Array.isArray(chart) ? chart : []);
 
-                // Set recent orders data (lấy đơn hàng hôm nay)
-                setRecentOrders(Array.isArray(todayOrdersRes?.data) ? todayOrdersRes.data : []);
+                // Xử lý dữ liệu đơn hàng gần đây
+                const orders = Array.isArray(todayOrdersRes?.data) 
+                    ? todayOrdersRes.data 
+                    : todayOrdersRes?.data?.data 
+                        ? Array.isArray(todayOrdersRes.data.data) 
+                            ? todayOrdersRes.data.data 
+                            : []
+                        : [];
+                
+                // Đảm bảo mỗi đơn hàng đều có thuộc tính items là mảng
+                const safeOrders = orders.map(order => ({
+                    ...order,
+                    items: Array.isArray(order.items) ? order.items : []
+                }));
+                
+                setRecentOrders(safeOrders);
 
             } catch (err) {
                 console.error("Lỗi khi fetch dữ liệu:", err);
@@ -191,9 +209,12 @@ const Dashboard = () => {
     };
 
     const StatCard = ({ item }) => {
+        if (!item) return null;
+        
         const [isHovered, setIsHovered] = useState(false);
-        const IconComponent = item.icon;
-        const isNegative = item.trend.includes("-");
+        const IconComponent = item.icon || (() => null);
+        const trendText = item.trend || "";
+        const isNegative = typeof trendText === 'string' && trendText.includes("-");
         const trendColor = isNegative ? theme.palette.error.main : theme.palette.success.main;
         const TrendIcon = isNegative ? TrendingDown : TrendingUp;
 
@@ -238,13 +259,21 @@ const Dashboard = () => {
 
     // Sửa lại OrderItem: click sẽ mở modal, hiển thị trạng thái, tên món, tổng tiền
     const OrderItem = ({ order }) => {
-        const statusConfig = getStatusConfig(order.status);
-        const StatusIcon = statusConfig.icon;
+        if (!order) return null;
+        
+        const statusConfig = getStatusConfig(order.status || 'pending');
+        const StatusIcon = statusConfig?.icon || AlertCircle;
         let foodNames = "";
+        
         if (Array.isArray(order.items) && order.items.length > 0) {
-            foodNames = order.items.map(item => item.foodName || item.foodItemName).filter(Boolean).join(", ");
+            foodNames = order.items
+                .map(item => item?.foodName || item?.foodItemName || "")
+                .filter(Boolean)
+                .join(", ") || "Không có món ăn";
         } else if (order.foodItemName) {
             foodNames = order.foodItemName;
+        } else {
+            foodNames = "Không có thông tin món ăn";
         }
 
         return (
