@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -23,12 +24,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
+
 @Component
 public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
     private final IUserService userService;
     private final EmailService emailService;
+
+    @Value("${frontend.urf}")
+    private String frontendURL;
+
 
     @Autowired
     public GoogleOAuth2SuccessHandler(JwtService jwtService, IUserService userService, EmailService emailService) {
@@ -59,7 +66,7 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 userService.save(user); // Lưu thông tin người dùng vào cơ sở dữ liệu
 
                 // Chuyển hướng đến trang xác minh
-                response.sendRedirect("http://localhost:5173/verify-account");
+                response.sendRedirect(frontendURL + "verify-account");
                 return;
             }
 
@@ -73,7 +80,7 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 userService.save(user); // Lưu token mới (cần thiết vì đây là người dùng cũ)
 
                 // Chuyển hướng đến trang xác minh
-                response.sendRedirect("http://localhost:5173/verify-account");
+                response.sendRedirect(frontendURL + "verify-account");
                 return;
             }
 
@@ -96,7 +103,7 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                     + "}";
 
             String encodedUser = URLEncoder.encode(json, StandardCharsets.UTF_8);
-            String redirectUrl = "http://localhost:5173/oauth2-success?user=" + encodedUser;
+            String redirectUrl = frontendURL + "oauth2-success?user=" + encodedUser;
 
             response.sendRedirect(redirectUrl);
         } catch (Exception e) {

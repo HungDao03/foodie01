@@ -110,7 +110,7 @@ public class SecurityConfig {
                                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                             } else {
                                 // Nếu muốn redirect tới trang frontend login, thay đổi URL dưới
-                                response.sendRedirect("http://localhost:5173/");
+                                response.sendRedirect(frontendURL);
                             }
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) ->

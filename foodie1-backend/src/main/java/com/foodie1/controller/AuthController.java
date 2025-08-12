@@ -10,6 +10,7 @@ import com.foodie1.model.User;
 import com.foodie1.service.role.IRoleService;
 import com.foodie1.service.user.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,9 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EmailService emailService;
+
+    @Value("${frontend.urf}")
+    private String frontendURL;
 
     public AuthController(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -157,7 +161,7 @@ public class AuthController {
             user.setVerificationToken(null); // Xóa token sau khi xác minh
             userService.save(user);
             HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create("http://localhost:5173/verify-success"));
+            headers.setLocation(URI.create(frontendURL + "verify-success"));
             return new ResponseEntity<>("Tài khoản đã được xác minh.", headers, HttpStatus.FOUND);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Link xác minh không hợp lệ.");
