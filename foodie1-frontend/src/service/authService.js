@@ -1,5 +1,13 @@
+import {axiosInstance} from "../configs/axios.config.js";
 
 class AuthService {
+    // Đăng nhập
+    static async login(formData) {
+        return await axiosInstance.post('/login', formData);
+    }
+    static async register(formData) {
+        return await axiosInstance.post('/register', formData);
+    }
     // Phương thức đăng xuất
     static logout() {
         // Xóa token và thông tin người dùng khỏi localStorage

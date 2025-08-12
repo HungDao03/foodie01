@@ -34,6 +34,7 @@ import {
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import useThemeStore from "../store/dark-light.jsx";
+import authService from "../../service/authService.js";
 
 // Styled components
 const StyledDialog = styled(Dialog)(({ theme }) => ({
@@ -195,7 +196,7 @@ export default function RegisterModal({ open, onClose, onLoginClick }) {
         setValidationErrors({});
 
         try {
-            await axios.post('http://localhost:8080/api/register', formData);
+            await authService.register(formData);
             toast.success('Đăng ký thành công! Vui lòng kiểm tra email.', {
                 position: "top-right",
                 autoClose: 3000,

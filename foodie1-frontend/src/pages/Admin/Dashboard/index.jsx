@@ -71,10 +71,14 @@ const Dashboard = () => {
 
                 setStats((prev) => {
                     const updated = [...prev];
-                    updated[0].value = userRes.data.length.toLocaleString();
-                    updated[1].value = foodRes.data.length.toLocaleString();
-                    updated[2].value = totalOrdersRes.data?.totalOrdersToday?.toLocaleString() || "0";
-                    const revenue = todayRevenueRes.data?.todayRevenue || 0;
+                    // Xử lý dữ liệu người dùng
+                    updated[0].value = (userRes?.data?.length || 0).toLocaleString();
+                    // Xử lý dữ liệu món ăn
+                    updated[1].value = (foodRes?.data?.length || 0).toLocaleString();
+                    // Xử lý đơn hàng hôm nay
+                    updated[2].value = (totalOrdersRes?.data?.totalOrdersToday || 0).toLocaleString();
+                    // Xử lý doanh thu hôm nay
+                    const revenue = todayRevenueRes?.data?.todayRevenue || 0;
                     updated[3].value = formatCurrency(revenue);
                     return updated;
                 });
@@ -84,7 +88,10 @@ const Dashboard = () => {
                     "Thứ 5": "T5", "Thứ 6": "T6", "Thứ 7": "T7", "Chủ nhật": "CN"
                 };
                 const orderedDays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"];
-                const rawData = Array.isArray(weeklyStatsRes.data) ? weeklyStatsRes.data : weeklyStatsRes.data.data;
+                // Lấy dữ liệu từ response, kiểm tra nếu response.data là mảng thì lấy trực tiếp, nếu không thì thử lấy response.data.data hoặc trả về mảng rỗng
+                const rawData = Array.isArray(weeklyStatsRes?.data) 
+                    ? weeklyStatsRes.data 
+                    : weeklyStatsRes?.data?.data || [];
 
                 const chart = orderedDays.map(day => {
                     const item = rawData.find(d => d.day === day) || { day, totalRevenue: 0 };
@@ -97,7 +104,7 @@ const Dashboard = () => {
                 setChartData(chart);
 
                 // Set recent orders data (lấy đơn hàng hôm nay)
-                setRecentOrders(todayOrdersRes.data || []);
+                setRecentOrders(Array.isArray(todayOrdersRes?.data) ? todayOrdersRes.data : []);
 
             } catch (err) {
                 console.error("Lỗi khi fetch dữ liệu:", err);

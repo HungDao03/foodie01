@@ -17,9 +17,10 @@ import {
 } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import { X, User, Lock, Eye, EyeOff, LogIn, Chrome } from 'lucide-react';
-import axios from 'axios';
+
 import { toast } from 'react-toastify';
 import useThemeStore from "../store/dark-light.jsx";
+import authService from "../../service/authService.js";
 
 
 // Styled components
@@ -165,7 +166,9 @@ export default function LoginModal({ open, onClose, onRegisterClick }) {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:8080/api/login', formData);
+            const response = await authService.login(formData);
+
+
             if (response.data.token) {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data));
