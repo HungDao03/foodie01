@@ -58,4 +58,14 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Cart cart;
+
+    // Method getter an toàn cho verified - đảm bảo không bao giờ trả về null
+    public Boolean getVerified() {
+        return verified != null ? verified : false;
+    }
+
+    // Method setter an toàn cho verified - đảm bảo không bao giờ set null
+    public void setVerified(Boolean verified) {
+        this.verified = verified != null ? verified : false;
+    }
 }

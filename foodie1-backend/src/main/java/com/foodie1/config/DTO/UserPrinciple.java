@@ -70,7 +70,8 @@ public class UserPrinciple implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getVerified(); // Assuming 'user' is a field in this class
+        // getVerified() đã được đảm bảo an toàn, không bao giờ trả về null
+        return user.getVerified();
     }
 }
     

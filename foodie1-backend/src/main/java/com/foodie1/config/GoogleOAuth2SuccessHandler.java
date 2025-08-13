@@ -71,6 +71,7 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             user = optionalUser.get(); // Lấy người dùng hiện có
 
             // Kiểm tra xem tài khoản đã được xác minh chưa
+            // getVerified() đã được đảm bảo an toàn, không bao giờ trả về null
             if (!user.getVerified()) {
                 // Nếu chưa xác minh, gửi lại email xác minh
                 String verificationToken = emailService.sendVerificationEmail(user);

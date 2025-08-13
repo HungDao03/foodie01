@@ -50,6 +50,7 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
+        // getVerified() đã được đảm bảo an toàn, không bao giờ trả về null
         user.setVerified(!user.getVerified());
         userService.save(user);
         return ResponseEntity.ok(" Trạng thái tài khoản đã được cập nhật thành công.");

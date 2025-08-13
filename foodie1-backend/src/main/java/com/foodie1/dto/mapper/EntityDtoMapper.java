@@ -50,6 +50,9 @@ public class EntityDtoMapper {
             res.setPaymentMethod(entity.getPaymentMethod().name());
         }
 
+        // getVerified() đã được đảm bảo an toàn, không bao giờ trả về null
+        // Không cần kiểm tra null nữa
+
         return res;
     }
     public User toUser(UserRegisterRequest dto) {
