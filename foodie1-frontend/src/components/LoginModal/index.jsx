@@ -21,6 +21,7 @@ import { X, User, Lock, Eye, EyeOff, LogIn, Chrome } from 'lucide-react';
 import { toast } from 'react-toastify';
 import useThemeStore from "../store/dark-light.jsx";
 import authService from "../../service/authService.js";
+import { isAuthenticated } from "../../utils/authUtils";
 
 
 // Styled components
@@ -168,7 +169,6 @@ export default function LoginModal({ open, onClose, onRegisterClick }) {
         try {
             const response = await authService.login(formData);
 
-
             if (response.data.token) {
                 localStorage.setItem('token', response.data.token);
                 localStorage.setItem('user', JSON.stringify(response.data));
@@ -177,11 +177,22 @@ export default function LoginModal({ open, onClose, onRegisterClick }) {
                     auth => auth.authority === 'ROLE_ADMIN'
                 );
 
-                toast.success('Đăng nhập thành công!', {
-                    position: "top-right",
-                    autoClose: 3000,
-                    theme: isDarkMode ? 'dark' : 'light'
-                });
+                // Kiểm tra xem có cần hiển thị toast đặt món không
+                const showOrderToast = sessionStorage.getItem('showOrderToast');
+                if (showOrderToast) {
+                    sessionStorage.removeItem('showOrderToast');
+                    toast.success('Đăng nhập thành công! Bây giờ bạn có thể đặt món.', {
+                        position: "top-right",
+                        autoClose: 3000,
+                        theme: isDarkMode ? 'dark' : 'light'
+                    });
+                } else {
+                    toast.success('Đăng nhập thành công!', {
+                        position: "top-right",
+                        autoClose: 3000,
+                        theme: isDarkMode ? 'dark' : 'light'
+                    });
+                }
 
                 setFormData({ username: '', password: '' });
                 setError('');
@@ -206,6 +217,14 @@ export default function LoginModal({ open, onClose, onRegisterClick }) {
     };
 
     const handleGoogleLogin = () => {
+        // Hiển thị toast thông báo đang chuyển hướng
+        toast.info('Đang chuyển hướng đến Google...', {
+            position: "top-right",
+            autoClose: 2000,
+            theme: isDarkMode ? 'dark' : 'light'
+        });
+        
+        // Chuyển hướng đến Google OAuth
         window.location.href = `${import.meta.env.VITE_API_BASE_URL_GG}oauth2/authorization/google`;
     };
 

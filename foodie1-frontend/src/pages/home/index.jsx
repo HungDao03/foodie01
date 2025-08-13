@@ -20,6 +20,7 @@ import FoodItemsService from "../../service/food-itemsService.js";
 import LoginModal from "../../components/LoginModal";
 import RegisterModal from "../../components/RegisterModal";
 import useThemeStore from "../../components/store/dark-light.jsx";
+import { isAuthenticated } from "../../utils/authUtils";
 
 
 // Styled components để tăng tính nổi bật
@@ -158,6 +159,19 @@ export default function Homepage() {
         handleOpenLogin();
     };
 
+    // Function xử lý khi nhấn nút "Đặt món"
+    const handleOrderClick = () => {
+        if (!isAuthenticated()) {
+            // Nếu chưa đăng nhập, mở modal login
+            handleOpenLogin();
+            // Lưu thông tin để hiển thị toast sau khi đăng nhập thành công
+            sessionStorage.setItem('showOrderToast', 'true');
+        } else {
+            // Nếu đã đăng nhập, chuyển đến trang user để đặt món
+            navigate('/user');
+        }
+    };
+
     return (
         <>
             {/* Header */}
@@ -277,6 +291,7 @@ export default function Homepage() {
                                             <StyledButton
                                                 variant="contained"
                                                 size="small"
+                                                onClick={handleOrderClick}
                                                 sx={{
                                                     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                                                     color: theme.palette.text.primary,
@@ -353,6 +368,7 @@ export default function Homepage() {
                                             <StyledButton
                                                 variant="contained"
                                                 size="small"
+                                                onClick={handleOrderClick}
                                                 sx={{
                                                     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                                                     color: theme.palette.text.primary,
