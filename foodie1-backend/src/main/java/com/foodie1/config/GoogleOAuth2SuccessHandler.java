@@ -107,7 +107,7 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setContentType("text/plain;charset=UTF-8");
-            response.getWriter().write("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+            response.getWriter().write("Đã có lỗi xảy ra: " + e.getMessage());
         }
     }
 }
