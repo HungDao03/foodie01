@@ -206,7 +206,7 @@ export default function LoginModal({ open, onClose, onRegisterClick }) {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+        window.location.href = `${import.meta.env.VITE_API_BASE_URL_GG}oauth2/authorization/google`;
     };
 
     const handleRegisterClick = () => {
