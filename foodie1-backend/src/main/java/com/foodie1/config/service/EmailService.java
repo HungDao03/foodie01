@@ -6,6 +6,7 @@ import com.foodie1.model.User;
 import com.foodie1.service.user.UserService;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -21,6 +22,9 @@ public class EmailService {
     @Autowired // Tiêm phụ thuộc JavaMailSender để gửi email
     private JavaMailSender mailSender;
 
+    @Value("${frontend.url}")
+    private String frontendURL; // URL của frontend để sử dụng trong email
+
     // Phương thức gửi email xác minh cho người dùng và trả về token xác minh
     public String sendVerificationEmail(User user) {
         try {
@@ -31,7 +35,7 @@ public class EmailService {
             String subject = "Xác nhận tài khoản";
 
             // Tạo URL xác minh với token, mã hóa URL để đảm bảo an toàn
-            String verifyUrl = "http://localhost:8080/api/verify?token=" + URLEncoder.encode(verificationToken, StandardCharsets.UTF_8);
+            String verifyUrl = frontendURL + "verify-account?token=" + URLEncoder.encode(verificationToken, StandardCharsets.UTF_8);
 
             // Tạo nội dung HTML của email
             String content = "<h3>Xin chào " + user.getFullName() + ",</h3>" // Lời chào với tên đầy đủ của người dùng
