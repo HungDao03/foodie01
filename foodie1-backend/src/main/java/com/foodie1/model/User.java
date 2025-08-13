@@ -51,7 +51,7 @@ public class User {
     private Set<Role> roles;
 
     @Column(name = "is_verified")
-    private boolean verified = false;
+    private Boolean verified = false;
 
     @Column(name = "verification_token")
     private String verificationToken;
