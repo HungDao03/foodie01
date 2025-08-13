@@ -5,8 +5,6 @@ import com.foodie1.config.service.EmailService;
 import com.foodie1.config.service.JwtService;
 import com.foodie1.model.User;
 import com.foodie1.service.user.IUserService;
-
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -33,7 +31,7 @@ public class GoogleOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     private final IUserService userService;
     private final EmailService emailService;
 
-    @Value("${frontend.urf}")
+    @Value("${frontend.url}")
     private String frontendURL;
 
 

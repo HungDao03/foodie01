@@ -37,7 +37,7 @@ import java.util.List;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Value("${frontend.urf}")
+    @Value("${frontend.url}")
     private String frontendURL;
 
     @Autowired

@@ -47,7 +47,7 @@ public class AuthController {
     @Autowired
     private EmailService emailService;
 
-    @Value("${frontend.urf}")
+   @Value("${frontend.url}")
     private String frontendURL;
 
     public AuthController(AuthenticationManager authenticationManager) {
