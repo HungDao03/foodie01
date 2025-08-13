@@ -19,5 +19,5 @@ public class UserResponse {
     private String avatar;
     private String paymentMethod;
     private Set<String> roles;
-    private boolean verified;
+    private Boolean verified;
 } 
