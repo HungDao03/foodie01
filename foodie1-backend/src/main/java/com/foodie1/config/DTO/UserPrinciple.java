@@ -70,7 +70,7 @@ public class UserPrinciple implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.isVerified(); // Assuming 'user' is a field in this class
+        return user.getVerified(); // Assuming 'user' is a field in this class
     }
 }
     
