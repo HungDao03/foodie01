@@ -51,26 +51,31 @@ public class User {
     private Set<Role> roles;
 
     @Column(name = "is_verified", columnDefinition = "TINYINT(1) DEFAULT 0")
-    private boolean verified = false;
+    private Integer verified = 0;  // Mặc định = 0 (false)
 
-    @Column(name = "verification_token", length = 255)
+    @Column(name = "verification_token", length = 255, columnDefinition = "VARCHAR(255)")
     private String verificationToken;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Cart cart;
 
-    // Method getter cho primitive boolean
+    // Method getter cho Integer - null → 0
+    public Integer getVerified() {
+        return verified != null ? verified : 0;
+    }
+
+    // Method setter cho Integer - null → 0
+    public void setVerified(Integer verified) {
+        this.verified = verified != null ? verified : 0;
+    }
+
+    // Method để kiểm tra boolean - null → false
     public boolean isVerified() {
-        return verified;
+        return verified != null && verified.equals(1);
     }
 
-    // Method setter cho primitive boolean
+    // Method để set trực tiếp boolean - true → 1, false → 0
     public void setVerified(boolean verified) {
-        this.verified = verified;
-    }
-
-    // Method setter cho Boolean wrapper (để tương thích)
-    public void setVerified(Boolean verified) {
-        this.verified = verified != null ? verified : false;
+        this.verified = verified ? 1 : 0;
     }
 }
