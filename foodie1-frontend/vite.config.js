@@ -13,6 +13,17 @@ export default defineConfig({
       }
     }
   },
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          mui: ['@mui/material', '@mui/icons-material']
+        }
+      }
+    }
+  },
   optimizeDeps: {
     include: [
       '@mui/material',
