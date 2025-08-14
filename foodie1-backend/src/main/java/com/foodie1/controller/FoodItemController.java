@@ -36,7 +36,7 @@ public class FoodItemController {
     @Autowired
     private EntityDtoMapper mapper;
 
-    @Value("${app.base-url:http://localhost:8080}")
+    @Value("${app.base-url}")
     private String baseUrl;
 
     @GetMapping
@@ -83,7 +83,7 @@ public class FoodItemController {
 
         if (image != null && !image.isEmpty()) {
             String filename = fileStorageService.saveFile(image, "food");
-            foodItem.setImageUrl(baseUrl + "/uploads/food/" + filename);
+            foodItem.setImageUrl(baseUrl + "uploads/food/" + filename);
         }
 
         FoodItem saved = foodItemService.saveFoodItem(foodItem);
@@ -122,7 +122,7 @@ public class FoodItemController {
             }
 
             String filename = fileStorageService.saveFile(image, "food");
-            existingFood.setImageUrl(baseUrl + "/uploads/food/" + filename);
+            existingFood.setImageUrl(baseUrl + "uploads/food/" + filename);
         }
 
         FoodItem updated = foodItemService.saveFoodItem(existingFood);
