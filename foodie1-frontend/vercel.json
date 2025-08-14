@@ -4,27 +4,5 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "routes": [
-    {
-      "src": "/verify-account",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/oauth2-success",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/verify-success",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/user(.*)",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/admin(.*)",
-      "dest": "/index.html"
-    }
   ]
 }
