@@ -50,10 +50,10 @@ public class User {
     )
     private Set<Role> roles;
 
-    @Column(name = "is_verified")
+    @Column(name = "is_verified", columnDefinition = "TINYINT(1) DEFAULT 0")
     private Boolean verified = false;
 
-    @Column(name = "verification_token")
+    @Column(name = "verification_token", length = 255)
     private String verificationToken;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -67,5 +67,10 @@ public class User {
     // Method setter an toàn cho verified - đảm bảo không bao giờ set null
     public void setVerified(Boolean verified) {
         this.verified = verified != null ? verified : false;
+    }
+
+    // Method để lấy giá trị primitive boolean (an toàn cho database)
+    public boolean isVerified() {
+        return Boolean.TRUE.equals(verified);
     }
 }
