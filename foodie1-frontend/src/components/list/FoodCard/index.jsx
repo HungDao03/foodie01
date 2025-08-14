@@ -35,7 +35,7 @@ export default function FoodCard({ food, onOrderClick, onFavoriteToggle, isFavor
     const getFoodImageUrl = useCallback((imageUrl) => {
         if (!imageUrl) return "https://placehold.co/300x200/e0e0e0/757575?text=Không+có+ảnh";
         if (imageUrl.startsWith("http")) return imageUrl;
-        return `http://localhost:8080/uploads/food/${imageUrl}`;
+        return `${import.meta.env.VITE_API_BASE_URL_GG}uploads/food/${imageUrl}`;
     }, []);
 
     const handleFavoriteClick = useCallback((e) => {

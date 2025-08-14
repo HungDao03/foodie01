@@ -424,7 +424,7 @@ const UserManagementPage = () => {
                                                 <Avatar
                                                     src={
                                                         user.avatar
-                                                            ? `http://localhost:8080/uploads/avatar/${user.avatar}`
+                                                            ? `${import.meta.env.VITE_API_BASE_URL_GG}uploads/avatar/${user.avatar}`
                                                             : '/images/default-avatar.png'
                                                     }
                                                     alt={user.username}
@@ -565,7 +565,7 @@ const UserManagementPage = () => {
                                 <Avatar
                                     src={
                                         selectedUser.avatar
-                                            ? `http://localhost:8080/uploads/avatar/${selectedUser.avatar}`
+                                            ? `${import.meta.env.VITE_API_BASE_URL_GG}uploads/avatar/${selectedUser.avatar}`
                                             : '/images/default-avatar.png'
                                     }
                                     alt={selectedUser.username}

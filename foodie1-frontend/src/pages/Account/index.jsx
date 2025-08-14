@@ -296,7 +296,7 @@ function Account() {
         if (avatarPath.startsWith('http')) return avatarPath;
 
         const cleanPath = avatarPath.replace(/^\/?uploads\/?/, '').replace(/^avatar\//, '');
-        return `http://localhost:8080/uploads/avatar/${cleanPath}`;
+        return `${import.meta.env.VITE_API_BASE_URL_GG}uploads/avatar/${cleanPath}`;
     }, [isEditing, tempAvatar, userData.avatar]);
 
     // Handlers

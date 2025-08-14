@@ -43,7 +43,17 @@ const OAuth2Success = () => {
                     localStorage.setItem("user", JSON.stringify(user));
                     localStorage.setItem("token", user.token);
                     toast.success("Đăng nhập thành công");
-                    navigate("/user");
+                    
+                    // Kiểm tra role để redirect đúng
+                    const isAdmin = user.authorities && user.authorities.some(
+                        auth => auth.authority === 'ROLE_ADMIN'
+                    );
+                    
+                    if (isAdmin) {
+                        navigate("/admin");
+                    } else {
+                        navigate("/user");
+                    }
                 } else {
                     navigate("/", { state: { error: "Dữ liệu người dùng không hợp lệ." } });
                 }

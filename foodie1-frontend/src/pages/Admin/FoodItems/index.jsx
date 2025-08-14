@@ -71,7 +71,7 @@ function FoodItems() {
     const getFoodImageUrl = (url) => {
         if (!url) return 'https://placehold.co/300x200/png?text=Food+Image';
         if (url.startsWith('http')) return url;
-        return `http://localhost:8080/uploads/food/${url}`;
+        return `${import.meta.env.VITE_API_BASE_URL_GG}uploads/food/${url}`;
     };
 
     if (loading) {

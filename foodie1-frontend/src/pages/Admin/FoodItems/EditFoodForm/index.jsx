@@ -214,7 +214,7 @@ function EditFoodForm({ open, onClose, food, onEditSuccess }) {
     const getImageUrl = (imageUrl) => {
         if (!imageUrl) return null;
         if (imageUrl.startsWith('http')) return imageUrl;
-        return `http://localhost:8080/uploads/food/${imageUrl}`;
+        return `${import.meta.env.VITE_API_BASE_URL_GG}uploads/food/${imageUrl}`;
     };
 
     const formatPrice = (price) => {
