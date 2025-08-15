@@ -22,7 +22,7 @@ function FoodCardList() {
     const [foods, setFoods] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { searchResults, searchKeyword } = useSearchStore();
+    const { searchResults, searchKeyword, updateSearchResult } = useSearchStore();
 
     useEffect(() => {
         const checkAuth = () => {
@@ -36,8 +36,32 @@ function FoodCardList() {
         const fetchFoods = async () => {
             setLoading(true);
             try {
+                // Lấy danh sách tất cả món ăn
                 const response = await FoodItemsService.getAllFoods();
-                setFoods(response.data);
+                const foodsData = response.data;
+                
+                // Lấy danh sách món ăn yêu thích
+                let favoriteFoods = [];
+                try {
+                    const favoriteResponse = await FoodItemsService.getFavoriteFoods();
+                    favoriteFoods = favoriteResponse.data || [];
+                } catch (error) {
+                    console.warn('Không thể lấy danh sách yêu thích:', error);
+                }
+                
+                // Cập nhật trạng thái yêu thích cho tất cả món ăn
+                const foodsWithFavorites = foodsData.map(food => {
+                    const isFavorite = favoriteFoods.some(favFood => {
+                        // So sánh ID dưới dạng string để tránh vấn đề kiểu dữ liệu
+                        return String(favFood.id) === String(food.id);
+                    });
+                    return {
+                        ...food,
+                        favorite: isFavorite ? 1 : 0
+                    };
+                });
+                
+                setFoods(foodsWithFavorites);
             } catch {
                 toast.error("Không thể tải danh sách món ăn");
                 setFoods([]);
@@ -75,6 +99,18 @@ function FoodCardList() {
         return () => clearInterval(interval); // cleanup khi unmount
     }, []);
 
+    // Thêm useEffect để refresh danh sách món ăn khi cần thiết
+    useEffect(() => {
+        // Refresh danh sách món ăn khi component mount
+        const refreshFoods = async () => {
+            if (foods.length > 0) {
+                await fetchFoods();
+            }
+        };
+        
+        refreshFoods();
+    }, []);
+
     const handleOrderClick = (food) => {
         if (!localStorage.getItem('token')) {
             toast.error('Vui lòng đăng nhập để đặt hàng!');
@@ -82,6 +118,63 @@ function FoodCardList() {
         }
         setSelectedFood(food);
         setOrderModalOpen(true);
+    };
+
+    // Xử lý yêu thích món ăn
+    const handleFavoriteToggle = async (foodId) => {
+        try {
+            // Kiểm tra trạng thái yêu thích hiện tại
+            const currentFood = foods.find(food => food.id === foodId);
+            const isCurrentlyFavorite = currentFood?.favorite === 1;
+            
+            if (isCurrentlyFavorite) {
+                // Nếu đã yêu thích rồi, gọi API để bỏ khỏi yêu thích
+                const response = await FoodItemsService.removeFromFavorites(foodId);
+                const updatedFood = response.data;
+                
+                // Cập nhật state local
+                setFoods(prev => 
+                    prev.map(food => 
+                        food.id === foodId 
+                            ? { ...food, favorite: 0 } // Đặt về 0 ngay lập tức
+                            : food
+                    )
+                );
+
+                // Cập nhật searchResults nếu đang tìm kiếm
+                if (searchResults.length > 0) {
+                    updateSearchResult(foodId, 0);
+                }
+
+                // Hiển thị thông báo thành công
+                toast.success(`Đã bỏ món "${updatedFood.name}" khỏi yêu thích!`);
+            } else {
+                // Nếu chưa yêu thích, gọi API để thêm vào yêu thích
+                const response = await FoodItemsService.addToFavorites(foodId);
+                const updatedFood = response.data;
+                
+                // Cập nhật state local
+                setFoods(prev => 
+                    prev.map(food => 
+                        food.id === foodId 
+                            ? { ...food, favorite: 1 } // Đặt về 1 ngay lập tức
+                            : food
+                    )
+                );
+
+                // Cập nhật searchResults nếu đang tìm kiếm
+                if (searchResults.length > 0) {
+                    updateSearchResult(foodId, 1);
+                }
+
+                // Hiển thị thông báo thành công
+                toast.success(`Đã thêm món "${updatedFood.name}" vào yêu thích!`);
+            }
+            
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+            toast.error('Không thể cập nhật trạng thái yêu thích');
+        }
     };
 
     const displayFoods = searchKeyword ? searchResults : foods;
@@ -108,7 +201,11 @@ function FoodCardList() {
                     <CircularProgress color="primary" />
                 </Box>
             ) : (
-                <FoodGrid foods={displayFoods} onOrderClick={handleOrderClick} />
+                <FoodGrid 
+                    foods={displayFoods} 
+                    onOrderClick={handleOrderClick}
+                    onFavoriteToggle={handleFavoriteToggle}
+                />
             )}
 
             <OrderModal

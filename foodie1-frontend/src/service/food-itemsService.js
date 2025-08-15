@@ -46,8 +46,25 @@ class FoodItemsService {
         return await axiosInstance.get(`/food-items?categoryId=${categoryId}`);
     }
 
+    // Thêm món ăn vào yêu thích (0 → 1)
+    static async addToFavorites(foodId) {
+        return await axiosInstance.post(`/food-items/${foodId}/add-to-favorites`);
+    }
 
+    // Bỏ món ăn khỏi yêu thích (1 → 0)
+    static async removeFromFavorites(foodId) {
+        return await axiosInstance.post(`/food-items/${foodId}/remove-from-favorites`);
+    }
 
+    // Lấy danh sách tất cả món ăn yêu thích
+    static async getFavoriteFoods() {
+        return await axiosInstance.get("/food-items/favorites");
+    }
+
+    // Toggle trạng thái yêu thích (0 → 1 hoặc 1 → 0)
+    static async toggleFavorite(foodId) {
+        return await axiosInstance.post(`/food-items/${foodId}/toggle-favorite`);
+    }
 }
 
 export default FoodItemsService;

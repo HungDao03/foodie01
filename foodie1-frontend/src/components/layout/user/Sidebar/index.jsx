@@ -90,8 +90,7 @@ function Sidebar({ onNavigate }) {
         { text: "Trang chủ", icon: <HomeIcon />, path: "/user" },
         { text: "Tài khoản", icon: <AccountCircleIcon />, path: "/user/account" },
         { text: "Giỏ hàng", icon: <ShoppingCartIcon />, path: "/user/cart" },
-        { text: "Yêu thích", icon: <FavoriteIcon />,onClick: () => toast.info("Chức năng đang phát triển"),},
-        { text: "Thông báo", icon: <NotificationsIcon />,onClick: () => toast.info("Chức năng đang phát triển"), },
+        { text: "Yêu thích", icon: <FavoriteIcon />,path: "/user/favorites" },
         { text: "Lịch sử đặt hàng", icon: <HistoryIcon />, path: "/user/history" },
     ];
 

@@ -36,6 +36,16 @@ const useSearchStore = create((set) => ({
         set({ searchResults: [], searchKeyword: '' });
         toast.dismiss(); // Xóa toast khi reset
     },
+    // Cập nhật trạng thái yêu thích của một món ăn trong searchResults
+    updateSearchResult: (foodId, newFavoriteStatus) => {
+        set((state) => ({
+            searchResults: state.searchResults.map(food => 
+                food.id === foodId 
+                    ? { ...food, favorite: newFavoriteStatus }
+                    : food
+            )
+        }));
+    },
 }));
 
 export default useSearchStore;

@@ -11,7 +11,7 @@ import {
     Box,
 } from "@mui/material";
 import { styled, useTheme } from '@mui/material/styles';
-import { AccessTime, LocationOn, Phone, Whatshot } from "@mui/icons-material";
+import { AccessTime, LocationOn, Phone, Whatshot, Restaurant, Star } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -43,8 +43,22 @@ const StyledButton = styled(Button)(({ theme }) => ({
 
 const HeroSection = styled(Box)(({ theme }) => ({
     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-    padding: theme.spacing(6, 0),
-    transition: 'all 0.3s ease',
+    padding: theme.spacing(8, 0),
+    position: 'relative',
+    overflow: 'hidden',
+    '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'url("/background.jpg")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity: 0.1,
+        zIndex: 0,
+    }
 }));
 
 const HeroButton = styled(Button)(({ theme }) => ({
@@ -53,14 +67,16 @@ const HeroButton = styled(Button)(({ theme }) => ({
     fontWeight: 800,
     boxShadow: `0 6px 24px ${theme.palette.primary.main}25`,
     borderRadius: theme.shape.borderRadius * 2,
-    padding: theme.spacing(2, 5),
+    padding: theme.spacing(2.5, 6),
     fontSize: '1.2rem',
     letterSpacing: '1px',
     textShadow: `0 2px 8px ${theme.palette.primary.main}20`,
+    minHeight: 56,
     '&:hover': {
         background: `linear-gradient(135deg, ${theme.palette.text.secondary} 0%, ${theme.palette.text.primary} 100%)`,
         color: theme.palette.primary.dark,
-        transform: 'translateY(-2px)',
+        transform: 'translateY(-3px)',
+        boxShadow: `0 12px 32px ${theme.palette.primary.main}35`,
     },
     transition: 'all 0.3s ease',
 }));
@@ -70,29 +86,46 @@ const StyledCard = styled(Card)(({ theme }) => ({
     borderRadius: theme.shape.borderRadius * 2.5,
     boxShadow: `0 4px 16px ${theme.palette.primary.main}15`,
     transition: 'all 0.3s ease',
+    border: '2px solid transparent',
     '&:hover': {
         boxShadow: `0 8px 32px ${theme.palette.primary.main}25`,
         transform: 'translateY(-4px)',
+        borderColor: theme.palette.primary.main,
     },
 }));
 
 const CategoryButton = styled(Button)(({ theme }) => ({
     fontWeight: 600,
     color: theme.palette.primary.main,
+    borderRadius: theme.shape.borderRadius * 2,
+    px: 3,
+    py: 1,
     '&:hover': {
         backgroundColor: `${theme.palette.primary.main}10`,
+        transform: 'translateY(-1px)',
     },
     transition: 'all 0.2s ease',
 }));
 
 const StatsSection = styled(Box)(({ theme }) => ({
-    padding: theme.spacing(4, 0),
-    background: theme.palette.primary.main,
+    padding: theme.spacing(6, 0),
+    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
     color: theme.palette.text.primary,
+    position: 'relative',
+    '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.1)',
+        zIndex: 0,
+    }
 }));
 
 const FooterSection = styled(Box)(({ theme }) => ({
-    padding: theme.spacing(4, 0),
+    padding: theme.spacing(6, 0),
     background: theme.palette.mode === 'dark' ? '#1d1d1d' : '#111827',
     color: theme.palette.text.primary,
 }));
@@ -239,7 +272,13 @@ export default function Homepage() {
             <Box sx={{ py: 6, bgcolor: 'background.default' }}>
                 <Container maxWidth="lg">
                     {/* Hàng 1 - Danh mục 1 */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                    <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        mb: 4,
+                        px: 2
+                    }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Whatshot sx={{ color: theme.palette.error.main, fontSize: '2.5rem' }} />
                             <Typography variant="h4" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
@@ -316,7 +355,13 @@ export default function Homepage() {
                     </Grid>
 
                     {/* Hàng 2 - Danh mục 2 */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                    <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        mb: 4,
+                        px: 2
+                    }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Whatshot sx={{ color: theme.palette.error.main, fontSize: '2.5rem' }} />
                             <Typography variant="h4" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
@@ -346,7 +391,6 @@ export default function Homepage() {
                                             <Typography variant="h6" sx={{
                                                 fontWeight: 700,
                                                 background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                                                WebkitBackgroundClip: "text",
                                                 WebkitTextFillColor: "transparent",
                                                 fontSize: "1.2rem"
                                             }}>

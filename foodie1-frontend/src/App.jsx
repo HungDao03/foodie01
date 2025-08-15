@@ -20,9 +20,9 @@ import useThemeStore from "./components/store/dark-light.jsx";
 import {darkTheme, lightTheme} from "./components/theme/dark-light.js";
 import UserManagementPage from "./pages/Admin/User/index.jsx";
 import FoodItems from "./pages/Admin/FoodItems/index.jsx";
-
 import CategoriesManager from "./pages/Admin/Categories/index.jsx";
 import OrderManagement from "./pages/Admin/Oder/index.jsx";
+import Favorites from "./pages/User/Favorites/index.jsx";
 
 function App() {
     const { isDarkMode } = useThemeStore();
@@ -53,6 +53,7 @@ function App() {
                     <Route path="account" element={<Account />} />
                     <Route path="history" element={<OrderHistory />} />
                     <Route path="cart" element={<CartPage />} />
+                    <Route path="Favorites" element={<Favorites />} />
                 </Route>
                 <Route path="/admin" element={<MainAdmin />}>
                     <Route path="" element={<AdminPage />} />
