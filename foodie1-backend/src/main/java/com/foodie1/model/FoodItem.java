@@ -47,5 +47,31 @@ public class FoodItem {
     @Column(nullable = false)
     private boolean deleted = false;    // Trạng thái xóa mềm
 
+    @Column(name = "favorite", columnDefinition = "TINYINT(1) DEFAULT 0")
+    private Integer favorite = 0;      // Trạng thái yêu thích (0 = false, 1 = true)
 
+    // Method getter cho Integer - null → 0
+    public Integer getFavorite() {
+        return favorite != null ? favorite : 0;
+    }
+
+    // Method setter cho Integer - null → 0
+    public void setFavorite(Integer favorite) {
+        this.favorite = favorite != null ? favorite : 0;
+    }
+
+    // Method để kiểm tra boolean - null → false
+    public boolean isFavorite() {
+        return favorite != null && favorite.equals(1);
+    }
+
+    // Method để set trực tiếp boolean - true → 1, false → 0
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite ? 1 : 0;
+    }
+
+    // Method để toggle trạng thái yêu thích
+    public void toggleFavorite() {
+        this.favorite = (this.favorite != null && this.favorite.equals(1)) ? 0 : 1;
+    }
 }

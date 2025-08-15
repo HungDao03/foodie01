@@ -145,4 +145,36 @@ public class FoodItemController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // Thêm món ăn vào yêu thích (0 → 1)
+    @PostMapping("/{id}/add-to-favorites")
+    public ResponseEntity<FoodItemResponse> addToFavorites(@PathVariable Long id) {
+        try {
+            FoodItem foodItem = foodItemService.addToFavorites(id);
+            return ResponseEntity.ok(mapper.toFoodItemResponse(foodItem));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    // Bỏ món ăn khỏi yêu thích (1 → 0)
+    @PostMapping("/{id}/remove-from-favorites")
+    public ResponseEntity<FoodItemResponse> removeFromFavorites(@PathVariable Long id) {
+        try {
+            FoodItem foodItem = foodItemService.removeFromFavorites(id);
+            return ResponseEntity.ok(mapper.toFoodItemResponse(foodItem));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    // Lấy danh sách tất cả món ăn yêu thích
+    @GetMapping("/favorites")
+    public ResponseEntity<List<FoodItemResponse>> getFavoriteFoodItems() {
+        List<FoodItem> favoriteItems = foodItemService.getFavoriteFoodItems();
+        List<FoodItemResponse> responses = favoriteItems.stream()
+                .map(mapper::toFoodItemResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
 }

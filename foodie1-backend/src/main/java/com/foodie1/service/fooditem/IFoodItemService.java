@@ -11,4 +11,13 @@ public interface IFoodItemService {
     FoodItem saveFoodItem(FoodItem foodItem);
     void deleteFoodItem(Long id);
     FoodItem findById(Long id);
+    
+    // Thêm vào yêu thích (0 → 1)
+    FoodItem addToFavorites(Long foodItemId);
+    
+    // Bỏ khỏi yêu thích (1 → 0)
+    FoodItem removeFromFavorites(Long foodItemId);
+    
+    // Lấy danh sách tất cả món ăn yêu thích
+    List<FoodItem> getFavoriteFoodItems();
 }

@@ -46,4 +46,46 @@ public class FoodItemService implements IFoodItemService {
         return foodItemRepository.findById(id).orElse(null);
     }
 
+    @Override
+    public FoodItem addToFavorites(Long foodItemId) {
+        FoodItem foodItem = findById(foodItemId);
+        if (foodItem == null) {
+            throw new RuntimeException("Không tìm thấy món ăn với ID: " + foodItemId);
+        }
+        
+        // Kiểm tra xem món ăn đã được yêu thích chưa
+        if (foodItem.isFavorite()) {
+            throw new RuntimeException("Món ăn này đã được yêu thích!");
+        }
+        
+        // Thêm vào yêu thích (0 → 1)
+        foodItem.setFavorite(true);
+        
+        // Lưu và trả về món ăn đã cập nhật
+        return foodItemRepository.save(foodItem);
+    }
+
+    @Override
+    public FoodItem removeFromFavorites(Long foodItemId) {
+        FoodItem foodItem = findById(foodItemId);
+        if (foodItem == null) {
+            throw new RuntimeException("Không tìm thấy món ăn với ID: " + foodItemId);
+        }
+        
+        // Kiểm tra xem món ăn có được yêu thích không
+        if (!foodItem.isFavorite()) {
+            throw new RuntimeException("Món ăn này chưa được yêu thích!");
+        }
+        
+        // Bỏ khỏi yêu thích (1 → 0)
+        foodItem.setFavorite(false);
+        
+        // Lưu và trả về món ăn đã cập nhật
+        return foodItemRepository.save(foodItem);
+    }
+
+    @Override
+    public List<FoodItem> getFavoriteFoodItems() {
+        return foodItemRepository.findByFavoriteAndDeletedFalse(1);
+    }
 }

@@ -13,6 +13,8 @@ public interface FoodItemRepository extends JpaRepository<FoodItem, Long> {
 
     boolean existsByCategoryId(Long categoryId);
 
-
     List<FoodItem> findByNameContainingIgnoreCaseAndDeletedFalse(String name);
+
+    // Tìm tất cả món ăn yêu thích (favorite = 1)
+    List<FoodItem> findByFavoriteAndDeletedFalse(Integer favorite);
 }
