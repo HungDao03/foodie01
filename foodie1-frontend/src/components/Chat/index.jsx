@@ -4,6 +4,7 @@ import { Send, Chat as ChatIcon, Close } from '@mui/icons-material';
 import { chatService } from '../../service/chatService';
 import { toast } from 'react-toastify';
 import { Client } from '@stomp/stompjs';
+import { getWebSocketURL, WEBSOCKET_CONFIG } from '../../configs/websocket.config';
 
 const Chat = ({ isOpen, onClose, receiverId, receiverName, receiverAvatar, isInline = false }) => {
     const [messages, setMessages] = useState([]);
@@ -20,12 +21,10 @@ const Chat = ({ isOpen, onClose, receiverId, receiverName, receiverAvatar, isInl
         console.log('Current user from localStorage:', user);
         setCurrentUser(user);
 
-        let client = null; // Local variable để track connection
-
         if (user && receiverId) {
             console.log('Loading messages for user:', user.id, 'receiver:', receiverId);
             // Kết nối WebSocket
-            client = connectWebSocket(user.id);
+            connectWebSocket(user.id);
             // Lấy tin nhắn cũ
             loadMessages(user.id, receiverId);
         } else {
@@ -40,21 +39,9 @@ const Chat = ({ isOpen, onClose, receiverId, receiverName, receiverAvatar, isInl
         }
 
         return () => {
-            // Cleanup WebSocket connection
-            if (client) {
-                console.log('Cleaning up WebSocket connection...');
-                try {
-                    if (client.connected) {
-                        console.log('Disconnecting active WebSocket client...');
-                        client.deactivate();
-                    }
-                } catch (error) {
-                    console.log('Error during WebSocket cleanup:', error);
-                }
+            if (stompClient) {
+                stompClient.disconnect();
             }
-            // Reset state
-            setStompClient(null);
-            setIsConnected(false);
         };
     }, [receiverId]);
 
@@ -62,32 +49,17 @@ const Chat = ({ isOpen, onClose, receiverId, receiverName, receiverAvatar, isInl
         scrollToBottom();
     }, [messages]);
 
-    // Xử lý WebSocket state changes
-    useEffect(() => {
-        return () => {
-            // Cleanup khi component unmount
-            if (stompClient) {
-                console.log('Component unmounting, cleaning up WebSocket...');
-                try {
-                    if (stompClient.connected) {
-                        stompClient.deactivate();
-                    }
-                } catch (error) {
-                    console.log('Error during final WebSocket cleanup:', error);
-                }
-            }
-        };
-    }, [stompClient]);
-
     const connectWebSocket = (userId) => {
+        // Sử dụng cấu hình WebSocket từ config
+        const wsUrl = getWebSocketURL();
+        console.log('Connecting to WebSocket:', wsUrl);
+        
         const client = new Client({
-            brokerURL: 'ws://localhost:8080/ws',
-            debug: (str) => {
-                console.log(str);
-            },
-            reconnectDelay: 5000,
-            heartbeatIncoming: 4000,
-            heartbeatOutgoing: 4000,
+            brokerURL: wsUrl,
+            debug: WEBSOCKET_CONFIG.debug,
+            reconnectDelay: WEBSOCKET_CONFIG.reconnectDelay,
+            heartbeatIncoming: WEBSOCKET_CONFIG.heartbeatIncoming,
+            heartbeatOutgoing: WEBSOCKET_CONFIG.heartbeatOutgoing,
         });
 
         client.onConnect = (frame) => {
@@ -130,7 +102,6 @@ const Chat = ({ isOpen, onClose, receiverId, receiverName, receiverAvatar, isInl
 
         client.activate();
         setStompClient(client);
-        return client; // Return the client for cleanup
     };
 
     const loadMessages = async (userId1, userId2) => {

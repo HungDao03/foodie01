@@ -378,7 +378,7 @@ function OrderModal({ open, onClose, foodItem, userInfo }) {
                             onChange={handleChange}
                             required
                             error={errors?.phoneNumber}
-                            helperText={errors?.phoneNumber ? "Vui lòng nhập số điện thoại hợp lệ (10-11 số)" : ""}
+                            helperText={errors?.phoneNumber ? "Vui lòng nhập số điện thoại hợp lệ (9-10 số)" : ""}
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: 3,

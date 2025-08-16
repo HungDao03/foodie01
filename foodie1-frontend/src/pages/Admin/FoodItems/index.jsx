@@ -141,7 +141,7 @@ function FoodItems() {
                         sx={{ 
                             color: theme.palette.text.secondary, 
                             fontSize: "1.25rem", 
-                            margin: 0,
+
                             fontWeight: 500,
                             opacity: 0.8,
                             maxWidth: '600px',
