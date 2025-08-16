@@ -15,6 +15,27 @@ const Chat = ({ isOpen, onClose, receiverId, receiverName, receiverAvatar, isInl
     const [currentUser, setCurrentUser] = useState(null);
     const theme = useTheme();
 
+    // Helper function để disconnect WebSocket một cách an toàn
+    const disconnectWebSocket = () => {
+        if (stompClient) {
+            console.log('Disconnecting WebSocket client:', stompClient);
+            try {
+                if (stompClient.connected) {
+                    console.log('Client is connected, deactivating...');
+                    stompClient.deactivate();
+                } else {
+                    console.log('Client is not connected, skipping deactivation');
+                }
+            } catch (error) {
+                console.warn('Error disconnecting WebSocket:', error);
+            }
+            setStompClient(null);
+            setIsConnected(false);
+        } else {
+            console.log('No WebSocket client to disconnect');
+        }
+    };
+
     useEffect(() => {
         // Lấy thông tin user hiện tại từ localStorage
         const user = JSON.parse(localStorage.getItem('user'));
@@ -23,7 +44,12 @@ const Chat = ({ isOpen, onClose, receiverId, receiverName, receiverAvatar, isInl
 
         if (user && receiverId) {
             console.log('Loading messages for user:', user.id, 'receiver:', receiverId);
-            // Kết nối WebSocket
+            console.log('Current stompClient state:', stompClient);
+            
+            // Disconnect WebSocket cũ trước khi tạo mới
+            disconnectWebSocket();
+            
+            // Kết nối WebSocket mới
             connectWebSocket(user.id);
             // Lấy tin nhắn cũ
             loadMessages(user.id, receiverId);
@@ -39,17 +65,27 @@ const Chat = ({ isOpen, onClose, receiverId, receiverName, receiverAvatar, isInl
         }
 
         return () => {
-            if (stompClient) {
-                stompClient.disconnect();
-            }
+            // Cleanup function - disconnect WebSocket khi component unmount hoặc receiverId thay đổi
+            console.log('useEffect cleanup triggered for receiverId:', receiverId);
+            disconnectWebSocket();
         };
-    }, [receiverId]);
+    }, [receiverId, currentUser?.id]);
 
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
+    // Cleanup WebSocket khi component unmount
+    useEffect(() => {
+        return () => {
+            disconnectWebSocket();
+        };
+    }, [stompClient]);
+
     const connectWebSocket = (userId) => {
+        // Disconnect client cũ nếu có
+        disconnectWebSocket();
+        
         // Sử dụng cấu hình WebSocket từ config
         const wsUrl = getWebSocketURL();
         console.log('Connecting to WebSocket:', wsUrl);
@@ -98,10 +134,26 @@ const Chat = ({ isOpen, onClose, receiverId, receiverName, receiverAvatar, isInl
         client.onStompError = (frame) => {
             console.error('Broker reported error: ' + frame.headers['message']);
             console.error('Additional details: ' + frame.body);
+            setIsConnected(false);
         };
 
-        client.activate();
-        setStompClient(client);
+        client.onWebSocketError = (error) => {
+            console.error('WebSocket error:', error);
+            setIsConnected(false);
+        };
+
+        client.onWebSocketClose = () => {
+            console.log('WebSocket connection closed');
+            setIsConnected(false);
+        };
+
+        try {
+            client.activate();
+            setStompClient(client);
+        } catch (error) {
+            console.error('Error activating WebSocket client:', error);
+            setIsConnected(false);
+        }
     };
 
     const loadMessages = async (userId1, userId2) => {
