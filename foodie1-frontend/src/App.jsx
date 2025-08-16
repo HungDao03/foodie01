@@ -17,18 +17,19 @@ import VerifyAccount from './pages/Verify/VerifyAccount/index.jsx';
 import MainUser from './components/layout/user/Main/index.jsx';
 import MainAdmin from './components/layout/admin/Main/index.jsx';
 import useThemeStore from "./components/store/dark-light.jsx";
-import {darkTheme, lightTheme} from "./components/theme/dark-light.js";
 import UserManagementPage from "./pages/Admin/User/index.jsx";
 import FoodItems from "./pages/Admin/FoodItems/index.jsx";
 import CategoriesManager from "./pages/Admin/Categories/index.jsx";
 import OrderManagement from "./pages/Admin/Oder/index.jsx";
 import Favorites from "./pages/User/Favorites/index.jsx";
+import ChatPage from "./pages/User/chat/index.jsx";
+import AdminChatPage from "./pages/Admin/chat/index.jsx";
 
 function App() {
-    const { isDarkMode } = useThemeStore();
+    const { currentTheme, isDarkMode } = useThemeStore();
 
     return (
-        <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
+        <ThemeProvider theme={currentTheme}>
             <CssBaseline />
             <ToastContainer
                 position="top-right"
@@ -54,14 +55,16 @@ function App() {
                     <Route path="history" element={<OrderHistory />} />
                     <Route path="cart" element={<CartPage />} />
                     <Route path="Favorites" element={<Favorites />} />
+                    <Route path="chat" element={<ChatPage />} />
                 </Route>
                 <Route path="/admin" element={<MainAdmin />}>
                     <Route path="" element={<AdminPage />} />
-                    <Route path="profile" element={<Account />} />
+                    <Route path="account" element={<Account />} />
                     <Route path="users" element={<UserManagementPage/> } />
                     <Route path="fooditems" element={<FoodItems />} />
                     <Route path="categories" element={<CategoriesManager  />} />
                     <Route path="orders" element={ <OrderManagement  />} />
+                    <Route path="chat" element={<AdminChatPage />} />
                 </Route>
             </Routes>
         </ThemeProvider>

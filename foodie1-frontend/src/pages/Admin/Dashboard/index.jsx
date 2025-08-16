@@ -56,7 +56,6 @@ const Dashboard = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            console.log('Bắt đầu fetch dữ liệu...');
             try {
                 const responses = await Promise.all([
                     UserService.getAllUsers(),
@@ -66,9 +65,6 @@ const Dashboard = () => {
                     OrderService.getTodayRevenue(),
                     OrderService.getOrdersToday()
                 ]);
-
-                // Log tất cả responses để debug
-                console.log('Responses từ API:', responses);
 
                 // Gán lại tên biến cho rõ ràng
                 const [userRes, foodRes, totalOrdersRes, weeklyStatsRes, todayRevenueRes, todayOrdersRes] = responses;
@@ -110,7 +106,6 @@ const Dashboard = () => {
 
                 // Đảm bảo chartData luôn là mảng
                 const safeChartData = Array.isArray(chart) ? chart : [];
-                console.log('Dữ liệu biểu đồ sau khi xử lý:', safeChartData);
                 setChartData(safeChartData);
 
                 // Xử lý dữ liệu đơn hàng gần đây
@@ -128,15 +123,9 @@ const Dashboard = () => {
                     items: Array.isArray(order.items) ? order.items : []
                 }));
                 
-                console.log('Dữ liệu đơn hàng sau khi xử lý:', safeOrders);
                 setRecentOrders(safeOrders);
 
             } catch (err) {
-                console.error("Lỗi khi fetch dữ liệu:", {
-                    message: err.message,
-                    stack: err.stack,
-                    response: err.response?.data
-                });
                 // Đặt giá trị mặc định cho tất cả state
                 setChartData([]);
                 setRecentOrders([]);
@@ -161,10 +150,14 @@ const Dashboard = () => {
         const configs = {
             'pending': { icon: Clock, color: '#f57c00', bg: '#fff3e0', text: 'Chờ xử lý' },
             'confirmed': { icon: CheckCircle, color: '#388e3c', bg: '#e8f5e8', text: 'Đã xác nhận' },
+            'CONFIRMED': { icon: CheckCircle, color: '#388e3c', bg: '#e8f5e8', text: 'Đã xác nhận' },
             'preparing': { icon: AlertCircle, color: '#1976d2', bg: '#e3f2fd', text: 'Đang chuẩn bị' },
             'delivering': { icon: TrendingUp, color: '#7b1fa2', bg: '#f3e5f5', text: 'Đang giao' },
+            'DELIVERING': { icon: TrendingUp, color: '#7b1fa2', bg: '#f3e5f5', text: 'Đang giao hàng' },
             'completed': { icon: CheckCircle, color: '#388e3c', bg: '#e8f5e8', text: 'Hoàn thành' },
-            'cancelled': { icon: XCircle, color: '#d32f2f', bg: '#ffebee', text: 'Đã hủy' }
+            'DELIVERED': { icon: CheckCircle, color: '#388e3c', bg: '#e8f5e8', text: 'Đã giao hàng' },
+            'cancelled': { icon: XCircle, color: '#d32f2f', bg: '#ffebee', text: 'Đã hủy' },
+            'CANCELLED': { icon: XCircle, color: '#d32f2f', bg: '#ffebee', text: 'Đã hủy' }
         };
         return configs[status] || configs['pending'];
     };
@@ -183,16 +176,15 @@ const Dashboard = () => {
 
     const styles = {
         container: {
-            padding: "24px",
-            backgroundColor: theme.palette.background.default,
-            minHeight: "100vh",
-            fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
+            p: 3,
+            background: theme.palette.background.default,
+            minHeight: '100vh'
         },
         paper: {
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: "8px",
-            boxShadow: theme.shadows[1],
-            transition: "0.3s"
+            background: theme.palette.background.paper,
+            borderRadius: 4,
+            overflow: 'hidden',
+            border: `1px solid ${theme.palette.divider}`
         },
         grid: {
             display: "grid",
@@ -208,21 +200,25 @@ const Dashboard = () => {
         statCard: {
             padding: "24px",
             cursor: "pointer",
-            transition: "transform 0.3s ease, box-shadow 0.3s ease"
+            transition: "all 0.3s ease",
+            position: 'relative',
+            overflow: 'hidden'
         },
         statCardHover: {
-            transform: "translateY(-6px) scale(1.02)",
-            boxShadow: theme.shadows[4]
+            transform: "translateY(-4px)",
+            boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
         },
         avatar: {
             width: "56px",
             height: "56px",
-            borderRadius: "50%",
+            borderRadius: "16px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             color: "#fff",
-            fontSize: "24px"
+            fontSize: "24px",
+            position: 'relative',
+            zIndex: 2
         }
     };
 
@@ -246,34 +242,78 @@ const Dashboard = () => {
                 style={{
                     ...styles.paper,
                     ...styles.statCard,
-                    backgroundColor: item.bgColor,
-                    border: `1px solid ${item.color}20`,
+                    background: `linear-gradient(135deg, ${item.bgColor} 0%, ${item.bgColor}dd 100%)`,
+                    border: `2px solid ${item.color}20`,
                     ...(isHovered ? styles.statCardHover : {})
                 }}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                        <div style={{ color: theme.palette.text.secondary, fontSize: "0.875rem", fontWeight: 500, marginBottom: "8px" }}>
+                {/* Background Pattern */}
+                <div style={{
+                    position: 'absolute',
+                    top: -20,
+                    right: -20,
+                    width: 100,
+                    height: 100,
+                    borderRadius: '50%',
+                    background: `${item.color}10`,
+                    opacity: isHovered ? 0.3 : 0.1,
+                    transition: 'all 0.4s ease'
+                }} />
+                
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: 'relative', zIndex: 3 }}>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ 
+                            color: theme.palette.text.secondary, 
+                            fontSize: "0.875rem", 
+                            fontWeight: 600, 
+                            marginBottom: "12px",
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            opacity: 0.8
+                        }}>
                             {item.label}
                         </div>
-                        <div style={{ fontSize: "2rem", fontWeight: "bold", color: theme.palette.text.primary, marginBottom: "8px" }}>
+                        <div style={{ 
+                            fontSize: "2.5rem", 
+                            fontWeight: "800", 
+                            color: item.color, 
+                            marginBottom: "12px",
+                            textShadow: `0 2px 4px ${item.color}20`
+                        }}>
                             {item.value}
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                            <TrendIcon size={16} color={trendColor} />
-                            <span style={{ color: trendColor, fontWeight: 600, fontSize: "0.875rem" }}>
+                        <div style={{ 
+                            display: "flex", 
+                            alignItems: "center", 
+                            gap: "8px",
+                            padding: "8px 16px",
+                            borderRadius: "20px",
+                            background: `${trendColor}15`,
+                            border: `1px solid ${trendColor}30`,
+                            width: 'fit-content'
+                        }}>
+                            <TrendIcon size={18} color={trendColor} />
+                            <span style={{ 
+                                color: trendColor, 
+                                fontWeight: 700, 
+                                fontSize: "0.875rem",
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                            }}>
                                 {item.trend}
                             </span>
                         </div>
                     </div>
                     <div style={{
                         ...styles.avatar,
-                        backgroundColor: item.color,
-                        boxShadow: `0 4px 20px ${item.color}30`
+                        background: `linear-gradient(135deg, ${item.color} 0%, ${item.color}dd 100%)`,
+                        boxShadow: `0 8px 32px ${item.color}40`,
+                        transform: isHovered ? 'rotate(5deg) scale(1.1)' : 'rotate(0deg) scale(1)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                     }}>
-                        <IconComponent size={24} />
+                        <IconComponent size={32} />
                     </div>
                 </div>
             </div>
@@ -291,16 +331,23 @@ const Dashboard = () => {
         const statusConfig = getStatusConfig(order.status || 'pending');
         const StatusIcon = statusConfig?.icon || AlertCircle;
         let foodNames = "";
+        let totalItems = 0;
         
         if (Array.isArray(order.items) && order.items.length > 0) {
             foodNames = order.items
                 .map(item => item?.foodName || item?.foodItemName || "")
                 .filter(Boolean)
                 .join(", ") || "Không có món ăn";
+            totalItems = order.items.reduce((sum, item) => sum + (item?.quantity || 0), 0);
         } else if (order.foodItemName) {
             foodNames = order.foodItemName;
+            totalItems = order.quantity || 1;
+        } else if (order.foodName) {
+            foodNames = order.foodName;
+            totalItems = order.quantity || 1;
         } else {
             foodNames = "Không có thông tin món ăn";
+            totalItems = 0;
         }
 
         return (
@@ -333,17 +380,43 @@ const Dashboard = () => {
                                     {statusConfig.text}
                                 </span>
                             </div>
+                            {totalItems > 1 && (
+                                <div style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    padding: "2px 8px",
+                                    borderRadius: "12px",
+                                    backgroundColor: theme.palette.secondary.main + "20",
+                                    border: `1px solid ${theme.palette.secondary.main}40`,
+                                    fontSize: "0.75rem",
+                                    color: theme.palette.secondary.main,
+                                    fontWeight: 500
+                                }}>
+                                    {totalItems} món
+                                </div>
+                            )}
                         </div>
                         <div style={{ fontSize: "0.875rem", color: theme.palette.text.secondary, marginBottom: "4px" }}>
                             {foodNames || "Không có món ăn"}
                         </div>
+                        <div style={{ fontSize: "0.75rem", color: theme.palette.text.secondary, marginBottom: "4px" }}>
+                            {formatTime(order.createdAt || order.orderTime)}
+                        </div>
                         <div style={{ fontSize: "0.75rem", color: theme.palette.text.secondary }}>
-                            {formatTime(order.createdAt)}
+                            {order.deliveryAddress ? `📍 ${order.deliveryAddress.substring(0, 50)}${order.deliveryAddress.length > 50 ? '...' : ''}` : 'Không có địa chỉ'}
                         </div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                        <div style={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                        <div style={{ fontWeight: 600, color: theme.palette.text.primary, marginBottom: "4px" }}>
                             {formatCurrency(order.totalAmount || order.total)}
+                        </div>
+                        <div style={{ 
+                            fontSize: "0.75rem", 
+                            color: order.paymentStatus === 'PAID' ? theme.palette.success.main : theme.palette.error.main,
+                            fontWeight: 500
+                        }}>
+                            {order.paymentStatus === 'PAID' ? '✅ Đã TT' : '❌ Chưa TT'}
                         </div>
                     </div>
                 </div>
@@ -366,15 +439,70 @@ const Dashboard = () => {
 
     return (
         <div style={styles.container}>
-            <div style={{ marginBottom: "32px" }}>
-                <h1 style={{ fontSize: "2.125rem", fontWeight: "bold", color: theme.palette.text.primary, margin: "0 0 8px 0" }}>
+            {/* Header Section */}
+            <div style={{ 
+                marginBottom: "40px",
+                textAlign: 'center',
+                position: 'relative'
+            }}>
+                <div style={{
+                    position: 'absolute',
+                    top: -50,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 200,
+                    height: 200,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                    filter: 'blur(40px)',
+                    zIndex: -1
+                }} />
+                
+                <h1 style={{ 
+                    fontSize: "3.5rem", 
+                    fontWeight: "900", 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    margin: "0 0 16px 0",
+                    textShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                    letterSpacing: '-0.02em'
+                }}>
                     Dashboard Quản trị
                 </h1>
-                <p style={{ color: theme.palette.text.secondary, fontSize: "1rem", margin: 0 }}>
+                <p style={{ 
+                    color: theme.palette.text.secondary, 
+                    fontSize: "1.25rem",
+                    fontWeight: 500,
+                    opacity: 0.8,
+                    maxWidth: '600px',
+                    margin: '0 auto'
+                }}>
                     Chào mừng trở lại! Đây là tổng quan về hoạt động hệ thống.
                 </p>
+                
+                {/* Decorative Elements */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '16px',
+                    marginTop: '24px'
+                }}>
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            opacity: 0.6,
+                            animation: `pulse ${2 + i * 0.5}s infinite`
+                        }} />
+                    ))}
+                </div>
             </div>
 
+            {/* Stats Cards */}
             <div style={{ ...styles.grid, ...styles.gridCols4 }}>
                 {safeStats.map((item, index) => (
                     <StatCard key={index} item={item} />
@@ -382,73 +510,184 @@ const Dashboard = () => {
             </div>
 
             <div style={{ ...styles.grid, ...styles.gridCols2 }}>
-                <div style={{ ...styles.paper, padding: "24px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                {/* Chart Section */}
+                <div style={{ ...styles.paper, padding: "32px", position: 'relative', overflow: 'hidden' }}>
+                    {/* Background Pattern */}
+                    <div style={{
+                        position: 'absolute',
+                        top: -100,
+                        right: -100,
+                        width: 200,
+                        height: 200,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+                        filter: 'blur(60px)',
+                        zIndex: 0
+                    }} />
+                    
+                    <div style={{ 
+                        display: "flex", 
+                        justifyContent: "space-between", 
+                        alignItems: "center", 
+                        marginBottom: "32px",
+                        position: 'relative',
+                        zIndex: 1
+                    }}>
                         <div>
-                            <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: theme.palette.text.primary, marginBottom: 4 }}>
-                                Doanh thu tuần
+                            <h2 style={{ 
+                                fontSize: "1.75rem", 
+                                fontWeight: "800", 
+                                color: theme.palette.text.primary, 
+                                marginBottom: 8,
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}>
+                                📊 Doanh thu tuần
                             </h2>
-                            <p style={{ color: theme.palette.text.secondary, fontSize: "0.875rem" }}>7 ngày qua</p>
+                            <p style={{ 
+                                color: theme.palette.text.secondary, 
+                                fontSize: "1rem",
+                                fontWeight: 500,
+                                opacity: 0.8
+                            }}>
+                                7 ngày qua
+                            </p>
+                        </div>
+                        <div style={{
+                            padding: '12px 20px',
+                            borderRadius: '20px',
+                            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                            border: '1px solid rgba(102, 126, 234, 0.2)',
+                            backdropFilter: 'blur(10px)'
+                        }}>
+                            <div style={{ 
+                                color: '#667eea', 
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                fontSize: '0.875rem'
+                            }}>
+                                Tổng quan
+                            </div>
                         </div>
                     </div>
-                    <div style={{ height: "280px" }}>
+                    <div style={{ height: "320px", position: 'relative', zIndex: 1 }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={safeChartData}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0.2} />
+                                        <stop offset="5%" stopColor="#667eea" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="#764ba2" stopOpacity={0.2} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                                <CartesianGrid 
+                                    strokeDasharray="3 3" 
+                                    stroke="rgba(102, 126, 234, 0.1)" 
+                                    opacity={0.5}
+                                />
                                 <XAxis
                                     dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
+                                    tick={{ 
+                                        fontSize: 14, 
+                                        fill: theme.palette.text.secondary,
+                                        fontWeight: 600
+                                    }}
                                 />
                                 <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 12, fill: theme.palette.text.secondary }}
+                                    tick={{ 
+                                        fontSize: 12, 
+                                        fill: theme.palette.text.secondary,
+                                        fontWeight: 500
+                                    }}
                                     tickFormatter={(value) => `${(value / 1000).toLocaleString("vi-VN")}k`}
                                 />
                                 <Tooltip
                                     formatter={(value) => `${value.toLocaleString("vi-VN")}₫`}
                                     contentStyle={{
-                                        backgroundColor: theme.palette.background.paper,
-                                        border: "none",
-                                        borderRadius: "8px",
-                                        boxShadow: theme.shadows[2],
-                                        color: theme.palette.text.primary
+                                        backgroundColor: 'rgba(255,255,255,0.95)',
+                                        borderRadius: "16px",
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                                        color: theme.palette.text.primary,
+                                        backdropFilter: 'blur(20px)',
+                                        border: '1px solid rgba(255,255,255,0.2)'
                                     }}
                                 />
                                 <Bar
                                     dataKey="revenue"
                                     fill="url(#colorRevenue)"
-                                    radius={[10, 10, 0, 0]}
-                                    barSize={40}
+                                    radius={[8, 8, 0, 0]}
+                                    barSize={50}
                                 />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Thêm phần Đơn hàng mới nhất */}
-                <div style={{ ...styles.paper, padding: "24px" }}>
-                    <div style={{ marginBottom: "24px" }}>
-                        <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: theme.palette.text.primary, marginBottom: 4 }}>
-                            Đơn hàng mới nhất
+                {/* Recent Orders Section */}
+                <div style={{ ...styles.paper, padding: "32px", position: 'relative', overflow: 'hidden' }}>
+                    {/* Background Pattern */}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: -100,
+                        left: -100,
+                        width: 200,
+                        height: 200,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(139, 195, 74, 0.05) 100%)',
+                        filter: 'blur(60px)',
+                        zIndex: 0
+                    }} />
+                    
+                    <div style={{ 
+                        marginBottom: "32px",
+                        position: 'relative',
+                        zIndex: 1
+                    }}>
+                        <h2 style={{ 
+                            fontSize: "1.75rem", 
+                            fontWeight: "800", 
+                            color: theme.palette.text.primary, 
+                            marginBottom: 8,
+                            background: 'linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>
+                            🛒 Đơn hàng gần đây
                         </h2>
-                        <p style={{ color: theme.palette.text.secondary, fontSize: "0.875rem" }}>
-                            {recentOrders.length} đơn hàng gần đây
-                        </p>
+                        <div style={{ 
+                            color: theme.palette.text.secondary, 
+                            fontSize: "1rem",
+                            fontWeight: 500,
+                            opacity: 0.8,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            <div style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%)',
+                                animation: 'pulse 2s infinite'
+                            }} />
+                            {recentOrders.length} đơn hàng mới nhất - Click để xem chi tiết
+                        </div>
                     </div>
                     <div style={{
-                        height: "280px",
+                        height: "320px",
                         overflowY: "auto",
-                        border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: "8px"
+                        border: `2px solid rgba(76, 175, 80, 0.1)`,
+                        borderRadius: "16px",
+                        background: 'rgba(76, 175, 80, 0.02)',
+                        position: 'relative',
+                        zIndex: 1
                     }}>
                         {safeRecentOrders.length > 0 ? (
                             safeRecentOrders.map((order, index) => (
@@ -461,10 +700,37 @@ const Dashboard = () => {
                                 alignItems: "center",
                                 justifyContent: "center",
                                 height: "100%",
-                                color: theme.palette.text.secondary
+                                color: theme.palette.text.secondary,
+                                padding: '40px'
                             }}>
-                                <ShoppingCart size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
-                                <p>Chưa có đơn hàng nào</p>
+                                <div style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginBottom: '20px'
+                                }}>
+                                    <ShoppingCart size={48} style={{ opacity: 0.6 }} />
+                                </div>
+                                <div style={{ 
+                                    fontSize: '1.25rem',
+                                    fontWeight: 600,
+                                    marginBottom: '8px',
+                                    color: theme.palette.text.primary
+                                }}>
+                                    Chưa có đơn hàng nào
+                                </div>
+                                <div style={{ 
+                                    fontSize: '0.875rem',
+                                    opacity: 0.7, 
+                                    textAlign: 'center',
+                                    color: theme.palette.text.secondary
+                                }}>
+                                    Các đơn hàng sẽ hiển thị ở đây khi khách hàng đặt hàng
+                                </div>
                             </div>
                         )}
                     </div>
@@ -493,7 +759,7 @@ const Dashboard = () => {
                             borderRadius: "16px",
                             boxShadow: theme.shadows[5],
                             padding: "32px",
-                            minWidth: "400px",
+                            minWidth: "500px",
                             maxWidth: "90vw",
                             maxHeight: "90vh",
                             overflowY: "auto",
@@ -514,78 +780,361 @@ const Dashboard = () => {
                             }}
                             onClick={() => setSelectedOrder(null)}
                         >×</button>
-                        <h2 style={{ fontWeight: "bold", fontSize: "1.5rem", marginBottom: 16 }}>
-                            Chi tiết đơn hàng #{selectedOrder.id || selectedOrder.orderCode}
-                        </h2>
-                        <div style={{ marginBottom: 16 }}>
+                        
+                        {/* Header */}
+                        <div style={{ marginBottom: 24 }}>
+                            <h2 style={{ fontWeight: "bold", fontSize: "1.5rem", marginBottom: 8 }}>
+                                Đơn hàng #{selectedOrder.id || selectedOrder.orderCode}
+                            </h2>
                             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                                 <span style={{ fontWeight: 600, color: theme.palette.text.primary }}>
                                     Trạng thái:
                                 </span>
                                 <span style={{
-                                    padding: "4px 12px",
-                                    borderRadius: "12px",
+                                    padding: "6px 16px",
+                                    borderRadius: "20px",
                                     background: getStatusConfig(selectedOrder.status).bg,
                                     color: getStatusConfig(selectedOrder.status).color,
-                                    fontWeight: 500
+                                    fontWeight: 600,
+                                    fontSize: "0.875rem"
                                 }}>
                                     {getStatusConfig(selectedOrder.status).text}
                                 </span>
                             </div>
                         </div>
-                        <div style={{ marginBottom: 16 }}>
-                            <span style={{ fontWeight: 600 }}>Địa chỉ giao hàng:</span> {selectedOrder.deliveryAddress || "Không có"}
+
+                        {/* Thông tin cơ bản */}
+                        <div style={{ 
+                            display: "grid", 
+                            gridTemplateColumns: "1fr 1fr", 
+                            gap: 16, 
+                            marginBottom: 24,
+                            padding: "16px",
+                            background: theme.palette.action.hover,
+                            borderRadius: "12px"
+                        }}>
+                            <div>
+                                <span style={{ fontWeight: 600, color: theme.palette.text.secondary, fontSize: "0.875rem" }}>
+                                    Thời gian đặt hàng:
+                                </span>
+                                <div style={{ fontWeight: 500, marginTop: 4 }}>
+                                    {selectedOrder.orderTime ? new Date(selectedOrder.orderTime).toLocaleString('vi-VN') : 
+                                     selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleString('vi-VN') : 'N/A'}
+                                </div>
+                            </div>
+                            <div>
+                                <span style={{ fontWeight: 600, color: theme.palette.text.secondary, fontSize: "0.875rem" }}>
+                                    Tổng tiền:
+                                </span>
+                                <div style={{ fontWeight: 700, color: theme.palette.primary.main, marginTop: 4, fontSize: "1.1rem" }}>
+                                    {formatCurrency(selectedOrder.totalAmount || selectedOrder.total)}
+                                </div>
+                            </div>
+                            <div>
+                                <span style={{ fontWeight: 600, color: theme.palette.text.secondary, fontSize: "0.875rem" }}>
+                                    Số điện thoại:
+                                </span>
+                                <div style={{ fontWeight: 500, marginTop: 4 }}>
+                                    {selectedOrder.phoneNumber || selectedOrder.user?.phone || "Không có"}
+                                </div>
+                            </div>
+                            <div>
+                                <span style={{ fontWeight: 600, color: theme.palette.text.secondary, fontSize: "0.875rem" }}>
+                                    Thanh toán:
+                                </span>
+                                <div style={{ fontWeight: 500, marginTop: 4 }}>
+                                    {selectedOrder.paymentMethod || "Không có"} | 
+                                    <span style={{ 
+                                        color: selectedOrder.paymentStatus === 'PAID' ? theme.palette.success.main : theme.palette.error.main,
+                                        fontWeight: 600,
+                                        marginLeft: 4
+                                    }}>
+                                        {selectedOrder.paymentStatus === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div style={{ marginBottom: 16 }}>
-                            <span style={{ fontWeight: 600 }}>Số điện thoại:</span> {selectedOrder.phoneNumber || selectedOrder.user?.phone || "Không có"}
-                        </div>
-                        <div style={{ marginBottom: 16 }}>
-                            <span style={{ fontWeight: 600 }}>Trạng thái thanh toán:</span> {selectedOrder.paymentStatus || "Không có"}
-                        </div>
-                        <div style={{ marginBottom: 16 }}>
-                            <span style={{ fontWeight: 600 }}>Phương thức thanh toán:</span> {selectedOrder.paymentMethod || "Không có"}
-                        </div>
-                        <div style={{ fontWeight: 600, marginBottom: 8 }}>Danh sách món ăn:</div>
-                        {Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
-                            <table style={{ width: "100%", fontSize: "0.95rem", marginBottom: 16 }}>
-                                <thead>
-                                <tr style={{ color: theme.palette.text.secondary }}>
-                                    <th style={{ textAlign: "left" }}>Hình ảnh</th>
-                                    <th style={{ textAlign: "left" }}>Tên món</th>
-                                    <th style={{ textAlign: "right" }}>Số lượng</th>
-                                    <th style={{ textAlign: "right" }}>Giá</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {selectedOrder.items.map((item, idx) => (
-                                    <tr key={idx}>
-                                        <td>
-                                            {item.imageUrl ? (
-                                                <img src={item.imageUrl} alt={item.foodName || item.foodItemName || "food"} style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover" }} />
-                                            ) : item.avatar ? (
-                                                <img src={item.avatar} alt={item.foodName || item.foodItemName || "food"} style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover" }} />
-                                            ) : (
-                                                <div style={{ width: 48, height: 48, borderRadius: 8, background: theme.palette.action.hover, display: "flex", alignItems: "center", justifyContent: "center", color: theme.palette.text.secondary }}>
-                                                    Không có
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td>{item.foodName || item.foodItemName || "Không rõ"}</td>
-                                        <td style={{ textAlign: "right" }}>{item.quantity ?? "-"}</td>
-                                        <td style={{ textAlign: "right" }}>{item.price !== undefined ? formatCurrency(item.price) : "-"}</td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <div style={{ color: theme.palette.text.secondary }}>Không có chi tiết món ăn.</div>
+
+                        {/* Địa chỉ giao hàng */}
+                        {selectedOrder.deliveryAddress && (
+                            <div style={{ marginBottom: 24 }}>
+                                <span style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
+                                    📍 Địa chỉ giao hàng:
+                                </span>
+                                <div style={{ 
+                                    padding: "12px 16px", 
+                                    background: theme.palette.action.hover, 
+                                    borderRadius: "8px",
+                                    lineHeight: 1.5
+                                }}>
+                                    {selectedOrder.deliveryAddress}
+                                </div>
+                            </div>
                         )}
-                        <div style={{ fontWeight: 600, marginTop: 16, textAlign: "right" }}>
-                            Tổng tiền: <span style={{ color: theme.palette.primary.main }}>{formatCurrency(selectedOrder.totalAmount || selectedOrder.total)}</span>
+
+                        {/* Ghi chú */}
+                        {selectedOrder.notes && (
+                            <div style={{ marginBottom: 24 }}>
+                                <span style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
+                                    📝 Ghi chú:
+                                </span>
+                                <div style={{ 
+                                    padding: "12px 16px", 
+                                    background: theme.palette.action.hover, 
+                                    borderRadius: "8px",
+                                    lineHeight: 1.5,
+                                    fontStyle: "italic"
+                                }}>
+                                    {selectedOrder.notes}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Danh sách món ăn */}
+                        <div style={{ marginBottom: 24 }}>
+                            <div style={{ fontWeight: 600, marginBottom: 16, fontSize: "1.1rem" }}>
+                                🍽️ Danh sách món ăn
+                            </div>
+                            {(() => {
+                                // Kiểm tra nếu có items array và không rỗng
+                                if (Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0) {
+                                    // Đơn ghép - có items array
+                                    return (
+                                        <div style={{
+                                            border: `1px solid ${theme.palette.divider}`,
+                                            borderRadius: "12px",
+                                            overflow: "hidden"
+                                        }}>
+                                            <div style={{
+                                                background: theme.palette.action.hover,
+                                                padding: "12px 16px",
+                                                display: "grid",
+                                                gridTemplateColumns: "1fr 80px 100px 120px",
+                                                gap: 16,
+                                                fontWeight: 600,
+                                                fontSize: "0.875rem",
+                                                color: theme.palette.text.secondary
+                                            }}>
+                                                <div>Món ăn</div>
+                                                <div style={{ textAlign: "center" }}>SL</div>
+                                                <div style={{ textAlign: "right" }}>Đơn giá</div>
+                                                <div style={{ textAlign: "right" }}>Tổng tiền</div>
+                                            </div>
+                                            {selectedOrder.items.map((item, idx) => (
+                                                <div key={idx} style={{
+                                                    padding: "16px",
+                                                    borderBottom: `1px solid ${theme.palette.divider}`,
+                                                    display: "grid",
+                                                    gridTemplateColumns: "1fr 80px 100px 120px",
+                                                    gap: 16,
+                                                    alignItems: "center"
+                                                }}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                                        {item.imageUrl ? (
+                                                            <img 
+                                                                src={item.imageUrl} 
+                                                                alt={item.foodName || item.foodItemName || "food"} 
+                                                                style={{ 
+                                                                    width: 48, 
+                                                                    height: 48, 
+                                                                    borderRadius: 8, 
+                                                                    objectFit: "cover",
+                                                                    border: `2px solid ${theme.palette.divider}`
+                                                                }} 
+                                                            />
+                                                        ) : item.avatar ? (
+                                                            <img 
+                                                                src={item.avatar} 
+                                                                alt={item.foodName || item.foodItemName || "food"} 
+                                                                style={{ 
+                                                                    width: 48, 
+                                                                    height: 48, 
+                                                                    borderRadius: 8, 
+                                                                    objectFit: "cover",
+                                                                    border: `2px solid ${theme.palette.divider}`
+                                                                }} 
+                                                            />
+                                                        ) : (
+                                                            <div style={{ 
+                                                                width: 48, 
+                                                                height: 48, 
+                                                                borderRadius: 8, 
+                                                                background: theme.palette.action.hover, 
+                                                                display: "flex", 
+                                                                alignItems: "center", 
+                                                                justifyContent: "center", 
+                                                                color: theme.palette.text.secondary,
+                                                                fontSize: "0.75rem"
+                                                            }}>
+                                                                🍽️
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                                                                {item.foodName || item.foodItemName || "Không rõ"}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ textAlign: "center", fontWeight: 600 }}>
+                                                        {item.quantity ?? "-"}
+                                                    </div>
+                                                    <div style={{ textAlign: "right", fontWeight: 500 }}>
+                                                        {item.price !== undefined ? formatCurrency(item.price) : "-"}
+                                                    </div>
+                                                    <div style={{ textAlign: "right", fontWeight: 700, color: theme.palette.primary.main }}>
+                                                        {item.price !== undefined && item.quantity ? formatCurrency(item.price * item.quantity) : "-"}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                } else if (selectedOrder.foodItemName || selectedOrder.foodName) {
+                                    // Đơn lẻ - có foodItemName hoặc foodName, nhưng items array rỗng
+                                    // Cần tính toán giá từ totalAmount và quantity
+                                    const quantity = selectedOrder.quantity || 1;
+                                    const unitPrice = selectedOrder.totalAmount / quantity;
+                                    
+                                    return (
+                                        <div style={{
+                                            border: `1px solid ${theme.palette.divider}`,
+                                            borderRadius: "12px",
+                                            overflow: "hidden"
+                                        }}>
+                                            <div style={{
+                                                background: theme.palette.action.hover,
+                                                padding: "12px 16px",
+                                                display: "grid",
+                                                gridTemplateColumns: "1fr 80px 100px 120px",
+                                                gap: 16,
+                                                fontWeight: 600,
+                                                fontSize: "0.875rem",
+                                                color: theme.palette.text.secondary
+                                            }}>
+                                                <div>Món ăn</div>
+                                                <div style={{ textAlign: "center" }}>SL</div>
+                                                <div style={{ textAlign: "right" }}>Đơn giá</div>
+                                                <div style={{ textAlign: "right" }}>Tổng tiền</div>
+                                            </div>
+                                            <div style={{
+                                                padding: "16px",
+                                                display: "grid",
+                                                gridTemplateColumns: "1fr 80px 100px 120px",
+                                                gap: 16,
+                                                alignItems: "center"
+                                            }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                                    {selectedOrder.foodItemImageUrl ? (
+                                                        <img 
+                                                            src={selectedOrder.foodItemImageUrl}
+                                                            alt={selectedOrder.foodItemName || selectedOrder.foodName || "food"} 
+                                                            style={{ 
+                                                                width: 48, 
+                                                                height: 48, 
+                                                                borderRadius: 8, 
+                                                                objectFit: "cover",
+                                                                border: `2px solid ${theme.palette.divider}`
+                                                            }} 
+                                                        />
+                                                    ) : selectedOrder.imageUrl ? (
+                                                        <img 
+                                                            src={selectedOrder.imageUrl}
+                                                            alt={selectedOrder.foodItemName || selectedOrder.foodName || "food"} 
+                                                            style={{ 
+                                                                width: 48, 
+                                                                height: 48, 
+                                                                borderRadius: 8, 
+                                                                objectFit: "cover",
+                                                                border: `2px solid ${theme.palette.divider}`
+                                                            }} 
+                                                        />
+                                                    ) : selectedOrder.avatar ? (
+                                                        <img 
+                                                            src={selectedOrder.avatar}
+                                                            alt={selectedOrder.foodItemName || selectedOrder.foodName || "food"} 
+                                                            style={{ 
+                                                                width: 48, 
+                                                                height: 48, 
+                                                                borderRadius: 8, 
+                                                                objectFit: "cover",
+                                                                border: `2px solid ${theme.palette.divider}`
+                                                            }} 
+                                                        />
+                                                    ) : (
+                                                        <div style={{ 
+                                                            width: 48, 
+                                                            height: 48, 
+                                                            borderRadius: 8, 
+                                                            background: theme.palette.action.hover, 
+                                                            display: "flex", 
+                                                            alignItems: "center", 
+                                                            justifyContent: "center", 
+                                                            color: theme.palette.text.secondary,
+                                                            fontSize: "0.75rem"
+                                                        }}>
+                                                            🍽️
+                                                        </div>
+                                                    )}
+                                                    <div>
+                                                        <div style={{ fontWeight: 600, marginBottom: 4 }}>
+                                                            {selectedOrder.foodItemName || selectedOrder.foodName}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style={{ textAlign: "center", fontWeight: 600 }}>
+                                                    {quantity}
+                                                </div>
+                                                <div style={{ textAlign: "right", fontWeight: 500 }}>
+                                                    {formatCurrency(unitPrice)}
+                                                </div>
+                                                <div style={{ textAlign: "right", fontWeight: 700, color: theme.palette.primary.main }}>
+                                                    {formatCurrency(selectedOrder.totalAmount)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                } else {
+                                    // Không có thông tin món ăn
+                                    return (
+                                        <div style={{ 
+                                            padding: "24px", 
+                                            textAlign: "center", 
+                                            color: theme.palette.text.secondary,
+                                            background: theme.palette.action.hover,
+                                            borderRadius: "8px"
+                                        }}>
+                                            Không có chi tiết món ăn.
+                                        </div>
+                                    );
+                                }
+                            })()}
+                        </div>
+
+                        {/* Tổng kết */}
+                        <div style={{ 
+                            textAlign: "right", 
+                            padding: "16px", 
+                            background: theme.palette.primary.main + "10",
+                            borderRadius: "12px",
+                            border: `1px solid ${theme.palette.primary.main + "20"}`
+                        }}>
+                            <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>
+                                Tổng tiền: <span style={{ color: theme.palette.primary.main, fontSize: "1.3rem" }}>
+                                    {formatCurrency(selectedOrder.totalAmount || selectedOrder.total)}
+                                </span>
+                            </span>
                         </div>
                     </div>
                 </div>
             )}
+            
+            {/* CSS Animations */}
+            <style>{`
+                @keyframes pulse {
+                    0% { transform: scale(1); opacity: 0.7; }
+                    50% { transform: scale(1.1); opacity: 0.3; }
+                    100% { transform: scale(1); opacity: 0.7; }
+                }
+            `}</style>
         </div>
     );
 };

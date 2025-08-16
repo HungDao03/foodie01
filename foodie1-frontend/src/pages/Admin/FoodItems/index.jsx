@@ -30,7 +30,6 @@ function FoodItems() {
         const loadFoods = async () => {
             try {
                 const response = await FoodItemsService.getAllFoods();
-                console.log('All foods:', response.data);
                 setFoods(response.data);
             } catch (error) {
                 toast.error('Không thể tải danh sách món ăn');
@@ -70,7 +69,7 @@ function FoodItems() {
         setEditingFood(food);
     };
 
-    if (loading) {
+        if (loading) {
         return (
             <Box
                 sx={{
@@ -78,10 +77,30 @@ function FoodItems() {
                     justifyContent: 'center',
                     alignItems: 'center',
                     height: '100vh',
-                    bgcolor: 'background.default',
+                    backgroundColor: theme.palette.background.default,
                 }}
             >
-                <CircularProgress />
+                <Box sx={{
+                    textAlign: 'center',
+                    padding: '40px',
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: '20px',
+                    boxShadow: theme.shadows[8],
+                    border: `1px solid ${theme.palette.divider}`
+                }}>
+                    <CircularProgress size={60} sx={{ color: theme.palette.primary.main, mb: 2 }} />
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            fontSize: '1.2rem',
+                            fontWeight: 600,
+                            color: theme.palette.text.primary,
+                            marginTop: '16px'
+                        }}
+                    >
+                        Đang tải danh sách món ăn...
+                    </Typography>
+                </Box>
             </Box>
         );
     }
@@ -89,61 +108,141 @@ function FoodItems() {
     const displayFoods = searchKeyword ? searchResults : foods;
 
     return (
-        <Box sx={{ py: 4, bgcolor: 'background.default' }}>
+        <Box sx={{ 
+            p: 4, 
+            backgroundColor: theme.palette.background.default,
+            minHeight: '100vh'
+        }}>
             <Container maxWidth="xl">
-                <Box
-                    sx={{
-                        mb: 4,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        gap: 2,
-                    }}
-                >
-                    <Typography variant="h4" fontWeight="bold" color="primary.dark">
-                        Quản lý món ăn
-                        {searchKeyword && (
-                            <Typography component="span" variant="h6" color="text.secondary" sx={{ ml: 2 }}>
-                                Kết quả tìm kiếm cho "{searchKeyword}"
-                            </Typography>
-                        )}
+                {/* Header Section */}
+                <Box sx={{ 
+                    marginBottom: "40px",
+                    textAlign: 'center',
+                    position: 'relative'
+                }}>
+                    <Typography
+                        variant="h1"
+                        sx={{ 
+                            fontSize: "3.5rem", 
+                            fontWeight: "900", 
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            margin: "0 0 16px 0",
+                            textShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                            letterSpacing: '-0.02em'
+                        }}
+                    >
+                        🍽️ Quản lý món ăn
                     </Typography>
+                    <Typography
+                        variant="body1"
+                        sx={{ 
+                            color: theme.palette.text.secondary, 
+                            fontSize: "1.25rem", 
+                            margin: 0,
+                            fontWeight: 500,
+                            opacity: 0.8,
+                            maxWidth: '600px',
+                            margin: '0 auto'
+                        }}
+                    >
+                        Quản lý và theo dõi tất cả món ăn trong hệ thống
+                    </Typography>
+                </Box>
 
+                {/* Search Results Info */}
+                {searchKeyword && (
+                    <Box sx={{
+                        marginBottom: '24px',
+                        padding: '16px 24px',
+                        backgroundColor: theme.palette.background.paper,
+                        borderRadius: '16px',
+                        border: `1px solid ${theme.palette.primary.main}20`,
+                        textAlign: 'center'
+                    }}>
+                        <Typography sx={{
+                            color: theme.palette.text.primary,
+                            fontSize: '1.1rem',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                        }}>
+                            <span style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                animation: 'pulse 2s infinite'
+                            }} />
+                            🔍 Kết quả tìm kiếm cho "{searchKeyword}"
+                        </Typography>
+                    </Box>
+                )}
+
+                {/* Add Food Button */}
+                <Box sx={{
+                    marginBottom: '32px',
+                    textAlign: 'center'
+                }}>
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
                         onClick={() => setIsAddFormOpen(true)}
                         sx={{
-                            height: 48,
-                            px: 3,
-                            borderRadius: '999px',
+                            height: 56,
+                            px: 4,
+                            borderRadius: '28px',
                             textTransform: 'none',
+                            fontSize: '1.1rem',
+                            fontWeight: 600,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                            boxShadow: `0 8px 32px ${theme.palette.primary.main}40`,
+                            '&:hover': {
+                                background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+                                transform: 'translateY(-2px)',
+                                boxShadow: `0 12px 40px ${theme.palette.primary.main}60`
+                            },
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
                     >
-                        Thêm món ăn
+                         Thêm món ăn mới
                     </Button>
                 </Box>
 
-                <Box
-                    sx={{
-                        display: 'grid',
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: "repeat(auto-fill, minmax(300px, 1fr))",
-                            md: "repeat(auto-fill, minmax(320px, 1fr))",
-                            lg: "repeat(auto-fill, minmax(340px, 1fr))"
-                        },
-                        gap: { xs: 3, sm: 4, md: 4, lg: 5 },
-                        py: 2,
-                        px: { xs: 2, sm: 3 },
-                        transition: 'opacity 0.3s ease-in-out',
-                        opacity: searchKeyword && !displayFoods.length ? 0.5 : 1,
-                    }}
-                >
+                {/* Food Items Grid */}
+                <Box sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                    gap: '24px',
+                    padding: '24px',
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: '20px',
+                    boxShadow: theme.shadows[8],
+                    border: `1px solid ${theme.palette.divider}`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    transition: 'opacity 0.3s ease-in-out',
+                    opacity: searchKeyword && !displayFoods.length ? 0.5 : 1,
+                }}>
                     {displayFoods.length > 0 ? (
                         displayFoods.map((food) => (
-                            <Box key={food.id} sx={{ position: 'relative' }}>
+                            <div key={food.id} style={{ 
+                                position: 'relative',
+                                zIndex: 1,
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
+                                e.currentTarget.style.zIndex = 2;
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                e.currentTarget.style.zIndex = 1;
+                            }}>
                                 {/* FoodCard Component với Admin Mode */}
                                 <FoodCard 
                                     food={food} 
@@ -152,52 +251,56 @@ function FoodItems() {
                                     isAdmin={true}
                                     onDelete={handleDelete}
                                 />
-                            </Box>
+                            </div>
                         ))
                     ) : (
                         <Box sx={{ 
                             gridColumn: '1 / -1',
                             textAlign: 'center', 
-                            py: 8, 
-                            px: 4,
+                            padding: '60px 40px',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            gap: 3
+                            gap: '24px',
+                            position: 'relative',
+                            zIndex: 1
                         }}>
                             <Box sx={{
                                 width: 120,
                                 height: 120,
                                 borderRadius: '50%',
-                                background: `linear-gradient(135deg, ${theme.palette.primary.main}20 0%, ${theme.palette.secondary.main}20 100%)`,
+                                backgroundColor: theme.palette.action.hover,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                mb: 2
+                                marginBottom: '16px',
+                                border: `2px solid ${theme.palette.primary.main}30`
                             }}>
-                                <Typography variant="h1" sx={{ 
+                                <Box sx={{ 
                                     fontSize: '3rem',
-                                    color: theme.palette.primary.main,
-                                    opacity: 0.6
+                                    opacity: 0.8
                                 }}>
                                     🍽️
-                                </Typography>
+                                </Box>
                             </Box>
                             
-                            <Typography variant="h5" sx={{ 
-                                fontWeight: 600,
-                                color: 'text.primary',
-                                mb: 1
+                            <Typography sx={{ 
+                                fontSize: '1.5rem',
+                                fontWeight: 700,
+                                color: theme.palette.text.primary,
+                                marginBottom: '8px'
                             }}>
                                 {searchKeyword ? `Không tìm thấy món ăn nào cho "${searchKeyword}"` : 'Không có món ăn nào'}
                             </Typography>
                             
                             {!searchKeyword && (
-                                <Typography variant="body1" sx={{ 
-                                    color: 'text.secondary',
+                                <Typography sx={{ 
+                                    fontSize: '1.1rem',
+                                    color: theme.palette.text.secondary,
                                     maxWidth: 400,
-                                    mb: 3,
-                                    opacity: 0.8
+                                    marginBottom: '24px',
+                                    opacity: 0.8,
+                                    lineHeight: 1.5
                                 }}>
                                     Hãy thêm món ăn đầu tiên để bắt đầu quản lý
                                 </Typography>
@@ -218,6 +321,8 @@ function FoodItems() {
                 food={editingFood}
                 onEditSuccess={handleEditSuccess}
             />
+            
+
         </Box>
     );
 }

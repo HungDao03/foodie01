@@ -14,15 +14,26 @@ import {
     Tooltip,
     Fade,
     Zoom, InputLabel, FormControl, Select, MenuItem,
+    Card,
+    CardContent,
+    Grid,
+    Chip,
+    IconButton,
+    Divider
 } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled, useTheme as useMuiTheme } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import CancelIcon from '@mui/icons-material/Cancel';
+import PersonIcon from '@mui/icons-material/Person';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { useNavigate } from 'react-router-dom';
 import UserService from '../../service/userService.js';
-
+import {toast} from "react-toastify";
 
 // Constants
 const AVATAR_SIZE = 150;
@@ -31,10 +42,10 @@ const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/we
 
 // Field configurations
 const FORM_FIELDS = [
-    { key: 'full_name', label: 'Họ và tên', type: 'text' },
-    { key: 'email', label: 'Email', type: 'email' },
-    { key: 'phone_number', label: 'Số điện thoại', type: 'tel' },
-    { key: 'address', label: 'Địa chỉ', type: 'text', multiline: true, rows: 2 },
+    { key: 'full_name', label: 'Họ và tên', type: 'text', icon: <PersonIcon /> },
+    { key: 'email', label: 'Email', type: 'email', icon: <EmailIcon /> },
+    { key: 'phone_number', label: 'Số điện thoại', type: 'tel', icon: <PhoneIcon /> },
+    { key: 'address', label: 'Địa chỉ', type: 'text', multiline: true, rows: 2, icon: <LocationOnIcon /> },
 ];
 
 // Enhanced styled components
@@ -68,6 +79,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
         transform: 'translateY(-2px)',
     },
 }));
+
 const AvatarContainer = styled(Box, {
     shouldForwardProp: (prop) => prop !== 'isEditing',
 })(({ isEditing }) => ({
@@ -223,6 +235,37 @@ const PageTitle = styled(Typography)(({ theme }) => ({
     },
 }));
 
+const InfoCard = styled(Card)(({ theme }) => ({
+    background: theme.palette.mode === 'dark'
+        ? 'linear-gradient(135deg, rgba(118, 75, 162, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%)'
+        : 'linear-gradient(135deg, rgba(118, 75, 162, 0.05) 0%, rgba(118, 75, 162, 0.02) 100%)',
+    border: `1px solid ${theme.palette.primary.main}20`,
+    borderRadius: theme.shape.borderRadius * 2,
+    transition: 'all 0.3s ease',
+    position: 'relative',
+    overflow: 'hidden',
+    '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '2px',
+        background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}, transparent)`,
+        opacity: 0.3,
+        transform: 'scaleX(0)',
+        transition: 'transform 0.3s ease',
+    },
+    '&:hover': {
+        transform: 'translateY(-3px)',
+        boxShadow: `0 12px 30px ${theme.palette.primary.main}25`,
+        border: `1px solid ${theme.palette.primary.main}50`,
+        '&::before': {
+            transform: 'scaleX(1)',
+        },
+    },
+}));
+
 function Account() {
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -240,8 +283,9 @@ function Account() {
     const [tempAvatar, setTempAvatar] = useState('');
     const [originalData, setOriginalData] = useState({});
     const navigate = useNavigate();
-    const theme = useTheme();
-// Check if data has changed
+    const theme = useMuiTheme();
+
+    // Check if data has changed
     const hasChanges = useMemo(() => {
         return Object.keys(userData).some(key =>
             userData[key] !== originalData[key]
@@ -355,11 +399,10 @@ function Account() {
             }));
 
             setIsEditing(false);
-            setSuccessMessage('Cập nhật thông tin thành công!');
+            toast.success('Cập nhật thông tin thành công    !');
             setError(null);
         } catch (err) {
             setError('Không thể cập nhật thông tin. Vui lòng thử lại sau.');
-            console.error('Error updating profile:', err);
         } finally {
             setIsLoading(false);
         }
@@ -420,7 +463,9 @@ function Account() {
                     justifyContent: 'center',
                     alignItems: 'center',
                     height: '100vh',
-                    bgcolor: 'background.default',
+                    background: theme.palette.mode === 'dark' 
+                        ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+                        : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
                 }}
             >
                 <CircularProgress
@@ -433,199 +478,338 @@ function Account() {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ py: 4, bgcolor: 'background.default' }}>
-            <Snackbar
-                open={!!error || !!successMessage}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                TransitionComponent={Fade}
-            >
-                <Alert
-                    severity={error ? 'error' : 'success'}
-                    sx={{
-                        width: '100%',
-                        borderRadius: theme.shape.borderRadius * 2,
-                        fontWeight: 600,
-                        bgcolor: error ? theme.palette.error.light : theme.palette.success.light,
-                        color: theme.palette.text.primary,
-                        boxShadow: `0 8px 24px ${theme.palette.primary.main}20`,
-                    }}
+        <Box sx={{ 
+            background: theme.palette.mode === 'dark' 
+                ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+                : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            minHeight: '100vh',
+            py: 3
+        }}>
+            <Container maxWidth="lg">
+                <Snackbar
+                    open={!!error || !!successMessage}
+                    autoHideDuration={6000}
                     onClose={handleCloseSnackbar}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                    TransitionComponent={Fade}
                 >
-                    {error || successMessage}
-                </Alert>
-            </Snackbar>
+                    <Alert
+                        severity={error ? 'error' : 'success'}
+                        sx={{
+                            width: '100%',
+                            borderRadius: theme.shape.borderRadius * 2,
+                            fontWeight: 600,
+                            bgcolor: error ? theme.palette.error.light : theme.palette.success.light,
+                            color: theme.palette.text.primary,
+                            boxShadow: `0 8px 24px ${theme.palette.primary.main}20`,
+                        }}
+                        onClose={handleCloseSnackbar}
+                    >
+                        {error || successMessage}
+                    </Alert>
+                </Snackbar>
 
-            <Fade in timeout={600}>
-                <Box>
-                    <PageTitle variant="h4" align="center">
-                        Tài khoản của tôi
-                    </PageTitle>
+                <Fade in timeout={600}>
+                    <Box>
+                        {/* Header Section */}
+                        <Card elevation={0} sx={{ 
+                            mb: 4, 
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                            borderRadius: 4,
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }}>
+                            <Box sx={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                width: '100%',
+                                height: '100%',
+                                background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+                                opacity: 0.3
+                            }} />
+                            <CardContent sx={{ position: 'relative', zIndex: 1, textAlign: 'center', py: 4 }}>
+                                <PageTitle variant="h3" align="center" sx={{ color: 'white', mb: 2 }}>
+                                    👤 Tài khoản của tôi
+                                </PageTitle>
+                                <Typography variant="h6" sx={{ 
+                                    color: 'rgba(255,255,255,0.9)',
+                                    fontWeight: 300
+                                }}>
+                                    Quản lý thông tin cá nhân và cài đặt tài khoản
+                                </Typography>
+                            </CardContent>
+                        </Card>
 
-                    <Zoom in timeout={800}>
-                        <StyledPaper>
-                            <Stack
-                                direction={{ xs: 'column', md: 'row' }}
-                                spacing={4}
-                                alignItems="flex-start"
-                            >
-                                {/* Avatar Section */}
-                                <Box sx={{ textAlign: 'center', minWidth: { md: 200 } }}>
-                                    <input
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        id="avatar-upload"
-                                        type="file"
-                                        onChange={handleAvatarChange}
-                                        disabled={!isEditing || isLoading}
-                                    />
-                                    <label htmlFor="avatar-upload">
-                                        <AvatarContainer isEditing={isEditing}>
-                                            <Tooltip
-                                                title={isEditing ? "Nhấn để thay đổi ảnh đại diện" : "Ảnh đại diện"}
-                                                placement="top"
-                                            >
-                                                <StyledAvatar
-                                                    src={avatarUrl}
-                                                    isEditing={isEditing}
-                                                    imgProps={{
-                                                        onError: (e) => {
-                                                            e.target.src = 'https://placehold.co/150/png?text=Avatar';
-                                                        },
-                                                    }}
-                                                />
-                                            </Tooltip>
-                                            {isEditing && (
-                                                <CameraIconOverlay>
-                                                    <PhotoCameraIcon fontSize="large" />
-                                                </CameraIconOverlay>
-                                            )}
-                                        </AvatarContainer>
-                                    </label>
-
-                                    {isEditing && (
-                                        <Typography
-                                            variant="caption"
-                                            sx={{
-                                                mt: 1,
-                                                display: 'block',
-                                                color: theme.palette.text.secondary,
-                                                fontStyle: 'italic'
-                                            }}
-                                        >
-                                            Nhấn vào ảnh để thay đổi
-                                        </Typography>
-                                    )}
-                                </Box>
-
-                                {/* Form Section */}
-                                <Box sx={{ flex: 1 }}>
-                                    <Stack
-                                        direction="row"
-                                        justifyContent="space-between"
-                                        alignItems="center"
-                                        mb={4}
-                                        flexWrap="wrap"
-                                        gap={2}
-                                    >
-                                        <Typography
-                                            variant="h5"
-                                            sx={{
-                                                fontWeight: 700,
-                                                color: theme.palette.primary.main,
-                                                background: theme.palette.mode === 'dark'
-                                                    ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
-                                                    : 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
-                                                WebkitBackgroundClip: 'text',
-                                                WebkitTextFillColor: 'transparent',
-                                            }}
-                                        >
-                                            Thông tin cá nhân
-                                        </Typography>
-
-                                        <Stack direction="row" spacing={2}>
-                                            {isEditing && (
-                                                <StyledButton
-                                                    variant="outlined"
-                                                    startIcon={<CancelIcon />}
-                                                    onClick={handleCancel}
-                                                    disabled={isLoading}
-                                                    sx={{
-                                                        background: 'transparent',
-                                                        border: `2px solid ${theme.palette.error.main}`,
-                                                        color: theme.palette.error.main,
-                                                        '&:hover': {
-                                                            background: theme.palette.error.main,
-                                                            color: 'white',
-                                                        }
-                                                    }}
+                        <Zoom in timeout={800}>
+                            <StyledPaper>
+                                <Stack
+                                    direction={{ xs: 'column', md: 'row' }}
+                                    spacing={4}
+                                    alignItems="flex-start"
+                                >
+                                    {/* Avatar Section */}
+                                    <Box sx={{ textAlign: 'center', minWidth: { md: 200 } }}>
+                                        <input
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id="avatar-upload"
+                                            type="file"
+                                            onChange={handleAvatarChange}
+                                            disabled={!isEditing || isLoading}
+                                        />
+                                        <label htmlFor="avatar-upload">
+                                            <AvatarContainer isEditing={isEditing}>
+                                                <Tooltip
+                                                    title={isEditing ? "Nhấn để thay đổi ảnh đại diện" : "Ảnh đại diện"}
+                                                    placement="top"
                                                 >
-                                                    Hủy
-                                                </StyledButton>
-                                            )}
-
-                                            <StyledButton
-                                                variant="contained"
-                                                startIcon={isEditing ? <SaveIcon /> : <EditIcon />}
-                                                onClick={isEditing ? handleSave : handleEdit}
-                                                disabled={isLoading || (isEditing && !hasChanges)}
-                                            >
-                                                {isLoading ? (
-                                                    <CircularProgress size={24} color="inherit" />
-                                                ) : (
-                                                    isEditing ? 'Lưu thay đổi' : 'Chỉnh sửa'
+                                                    <StyledAvatar
+                                                        src={avatarUrl}
+                                                        isEditing={isEditing}
+                                                        imgProps={{
+                                                            onError: (e) => {
+                                                                e.target.src = 'https://placehold.co/150/png?text=Avatar';
+                                                            },
+                                                        }}
+                                                    />
+                                                </Tooltip>
+                                                {isEditing && (
+                                                    <CameraIconOverlay>
+                                                        <PhotoCameraIcon fontSize="large" />
+                                                    </CameraIconOverlay>
                                                 )}
-                                            </StyledButton>
-                                        </Stack>
-                                    </Stack>
+                                            </AvatarContainer>
+                                        </label>
 
-                                    <Stack spacing={3}>
-                                        {FORM_FIELDS.map((field) => (
-                                            <Fade in key={field.key} timeout={400}>
-                                                <StyledTextField
-                                                    label={field.label}
-                                                    name={field.key}
-                                                    type={field.type}
-                                                    value={userData[field.key]}
-                                                    onChange={handleChange}
-                                                    disabled={!isEditing || isLoading}
-                                                    fullWidth
-                                                    multiline={field.multiline}
-                                                    rows={field.rows}
-                                                    variant="outlined"
-                                                    InputProps={{
-                                                        sx: {
-                                                            transition: 'all 0.3s ease',
-                                                        }
-                                                    }}
-                                                />
-                                            </Fade>
-                                        ))}
-                                    </Stack>
-
-                                    <Fade in timeout={400}>
-                                        <FormControl fullWidth disabled={!isEditing || isLoading}>
-                                            <InputLabel id="payment-method-label">Phương thức thanh toán</InputLabel>
-                                            <Select
-                                                labelId="payment-method-label"
-                                                name="paymentMethod"
-                                                value={userData.paymentMethod || ''}
-                                                label="Phương thức thanh toán"
-                                                onChange={handleChange}
+                                        {isEditing && (
+                                            <Typography
+                                                variant="caption"
+                                                sx={{
+                                                    mt: 1,
+                                                    display: 'block',
+                                                    color: theme.palette.text.secondary,
+                                                    fontStyle: 'italic'
+                                                }}
                                             >
-                                                <MenuItem value="COD">Thanh toán khi nhận hàng (COD)</MenuItem>
-                                                <MenuItem value="ONLINE">Thanh toán trực tuyến (ONLINE)</MenuItem>
-                                            </Select>
-                                        </FormControl>
-                                    </Fade>
-                                </Box>
-                            </Stack>
-                        </StyledPaper>
-                    </Zoom>
-                </Box>
-            </Fade>
-        </Container>
+                                                Nhấn vào ảnh để thay đổi
+                                            </Typography>
+                                        )}
+                                    </Box>
+
+                                    {/* Form Section */}
+                                    <Box sx={{ flex: 1 }}>
+                                        <Stack
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            alignItems="center"
+                                            mb={4}
+                                            flexWrap="wrap"
+                                            gap={2}
+                                        >
+                                            <Typography
+                                                variant="h5"
+                                                sx={{
+                                                    fontWeight: 700,
+                                                    color: theme.palette.primary.main,
+                                                    background: theme.palette.mode === 'dark'
+                                                        ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+                                                        : 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                                                    WebkitBackgroundClip: 'text',
+                                                    WebkitTextFillColor: 'transparent',
+                                                }}
+                                            >
+                                                Thông tin cá nhân
+                                            </Typography>
+
+                                            <Stack direction="row" spacing={2}>
+                                                {isEditing && (
+                                                    <StyledButton
+                                                        variant="outlined"
+                                                        startIcon={<CancelIcon />}
+                                                        onClick={handleCancel}
+                                                        disabled={isLoading}
+                                                        sx={{
+                                                            background: 'transparent',
+                                                            border: `2px solid ${theme.palette.error.main}`,
+                                                            color: theme.palette.error.main,
+                                                            '&:hover': {
+                                                                background: theme.palette.error.main,
+                                                                color: 'white',
+                                                            }
+                                                        }}
+                                                    >
+                                                        Hủy
+                                                    </StyledButton>
+                                                )}
+
+                                                <StyledButton
+                                                    variant="contained"
+                                                    startIcon={isEditing ? <SaveIcon /> : <EditIcon />}
+                                                    onClick={isEditing ? handleSave : handleEdit}
+                                                    disabled={isLoading || (isEditing && !hasChanges)}
+                                                >
+                                                    {isLoading ? (
+                                                        <CircularProgress size={24} color="inherit" />
+                                                    ) : (
+                                                        isEditing ? 'Lưu thay đổi' : 'Chỉnh sửa'
+                                                    )}
+                                                </StyledButton>
+                                            </Stack>
+                                        </Stack>
+
+                                        <Stack spacing={3}>
+                                            {FORM_FIELDS.map((field) => (
+                                                <Fade in key={field.key} timeout={400}>
+                                                    <InfoCard>
+                                                        <CardContent sx={{ p: 3 }}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                                                <Box sx={{
+                                                                    p: 1.5,
+                                                                    borderRadius: 2,
+                                                                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                                                                    color: 'white',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    minWidth: 48,
+                                                                    height: 48
+                                                                }}>
+                                                                    {field.icon}
+                                                                </Box>
+                                                                <Box sx={{ flex: 1 }}>
+                                                                    <Typography variant="h6" sx={{ 
+                                                                        fontWeight: 600, 
+                                                                        color: theme.palette.text.primary,
+                                                                        mb: 0.5
+                                                                    }}>
+                                                                        {field.label}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" sx={{ 
+                                                                        color: theme.palette.text.secondary,
+                                                                        opacity: 0.8
+                                                                    }}>
+                                                                        {field.key === 'full_name' && 'Tên đầy đủ của bạn'}
+                                                                        {field.key === 'email' && 'Địa chỉ email để liên lạc'}
+                                                                        {field.key === 'phone_number' && 'Số điện thoại để giao hàng'}
+                                                                        {field.key === 'address' && 'Địa chỉ giao hàng chi tiết'}
+                                                                    </Typography>
+                                                                </Box>
+                                                            </Box>
+                                                            <StyledTextField
+                                                                label={field.label}
+                                                                name={field.key}
+                                                                type={field.type}
+                                                                value={userData[field.key]}
+                                                                onChange={handleChange}
+                                                                disabled={!isEditing || isLoading}
+                                                                fullWidth
+                                                                multiline={field.multiline}
+                                                                rows={field.rows}
+                                                                variant="outlined"
+                                                                size="large"
+                                                                sx={{
+                                                                    '& .MuiOutlinedInput-root': {
+                                                                        fontSize: '1.1rem',
+                                                                        padding: '12px 16px',
+                                                                        '& input': {
+                                                                            fontWeight: 500
+                                                                        }
+                                                                    },
+                                                                    '& .MuiInputLabel-root': {
+                                                                        fontSize: '1rem',
+                                                                        fontWeight: 600
+                                                                    }
+                                                                }}
+                                                                InputProps={{
+                                                                    sx: {
+                                                                        transition: 'all 0.3s ease',
+                                                                        borderRadius: 3,
+                                                                        '&:hover': {
+                                                                            transform: 'translateY(-1px)',
+                                                                            boxShadow: `0 4px 12px ${theme.palette.primary.main}20`
+                                                                        }
+                                                                    }
+                                                                }}
+                                                            />
+                                                        </CardContent>
+                                                    </InfoCard>
+                                                </Fade>
+                                            ))}
+                                        </Stack>
+
+                                        <Fade in timeout={400}>
+                                            <InfoCard sx={{ mt: 3 }}>
+                                                <CardContent sx={{ p: 3 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                                        <Box sx={{
+                                                            p: 1.5,
+                                                            borderRadius: 2,
+                                                            background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+                                                            color: 'white',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            minWidth: 48,
+                                                            height: 48
+                                                        }}>
+                                                            <PaymentIcon />
+                                                        </Box>
+                                                        <Box sx={{ flex: 1 }}>
+                                                            <Typography variant="h6" sx={{ 
+                                                                fontWeight: 600, 
+                                                                color: theme.palette.text.primary,
+                                                                mb: 0.5
+                                                            }}>
+                                                                Phương thức thanh toán
+                                                            </Typography>
+                                                            <Typography variant="body2" sx={{ 
+                                                                color: theme.palette.text.secondary,
+                                                                opacity: 0.8
+                                                            }}>
+                                                                Chọn cách thức thanh toán phù hợp với bạn
+                                                            </Typography>
+                                                        </Box>
+                                                    </Box>
+                                                    <FormControl fullWidth disabled={!isEditing || isLoading}>
+                                                        <InputLabel id="payment-method-label">Phương thức thanh toán</InputLabel>
+                                                        <Select
+                                                            labelId="payment-method-label"
+                                                            name="paymentMethod"
+                                                            value={userData.paymentMethod || ''}
+                                                            label="Phương thức thanh toán"
+                                                            onChange={handleChange}
+                                                            sx={{
+                                                                '& .MuiOutlinedInput-root': {
+                                                                    fontSize: '1.1rem',
+                                                                    padding: '12px 16px',
+                                                                    borderRadius: 3,
+                                                                    '&:hover': {
+                                                                        transform: 'translateY(-1px)',
+                                                                        boxShadow: `0 4px 12px ${theme.palette.secondary.main}20`
+                                                                    }
+                                                                },
+                                                                '& .MuiInputLabel-root': {
+                                                                    fontSize: '1rem',
+                                                                    fontWeight: 600
+                                                                }
+                                                            }}
+                                                        >
+                                                            <MenuItem value="COD">Thanh toán khi nhận hàng (COD)</MenuItem>
+                                                            <MenuItem value="ONLINE">Thanh toán trực tuyến (ONLINE)</MenuItem>
+                                                        </Select>
+                                                    </FormControl>
+                                                </CardContent>
+                                            </InfoCard>
+                                        </Fade>
+                                    </Box>
+                                </Stack>
+                            </StyledPaper>
+                        </Zoom>
+                    </Box>
+                </Fade>
+            </Container>
+        </Box>
     );
 }
 

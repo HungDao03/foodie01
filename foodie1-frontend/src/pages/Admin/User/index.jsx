@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { toast } from 'react-toastify';
 import {
     Box,
     Table,
@@ -7,7 +8,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
     TextField,
     CircularProgress,
     Typography,
@@ -20,8 +20,6 @@ import {
     DialogContent,
     DialogActions,
     Grid,
-    Card,
-    CardContent,
     IconButton,
     Tooltip,
     FormControl,
@@ -34,31 +32,22 @@ import {
     Alert,
     Snackbar,
     Badge,
-    Divider,
     TableSortLabel,
-    Collapse,
     List,
     ListItem,
     ListItemText,
     ListItemIcon,
     Fab,
-    Menu
+    useTheme
 } from '@mui/material';
 import {
     Visibility,
-    Edit,
     Delete,
-    Refresh,
     Add,
-    FilterList,
-    Download,
-    Upload,
-    PersonAdd,
     Email,
     Phone,
     LocationOn,
     CalendarToday,
-    MoreVert,
     Close,
     Search,
     Clear,
@@ -67,11 +56,12 @@ import {
     CheckCircle,
     Warning
 } from '@mui/icons-material';
-import {  ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import UserService from "../../../service/userService.js";
 
 const UserManagementPage = () => {
+    const theme = useTheme();
 
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -84,7 +74,8 @@ const UserManagementPage = () => {
     const [deleteUserId, setDeleteUserId] = useState(null);
     const [filterStatus, setFilterStatus] = useState('all');
     const [sortBy, setSortBy] = useState('username');
-    const [sortOrder, setSortOrder] = useState('asc');const [stats, setStats] = useState({
+    const [sortOrder, setSortOrder] = useState('asc');
+    const [stats, setStats] = useState({
         total: 0,
         verified: 0,
         unverified: 0,
@@ -92,9 +83,6 @@ const UserManagementPage = () => {
     });
     const [actionLoading, setActionLoading] = useState({});
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [selectedUserForMenu, setSelectedUserForMenu] = useState(null);
-
 
     const fetchUsers = useCallback(async () => {
         setLoading(true);
@@ -114,7 +102,6 @@ const UserManagementPage = () => {
                 ).length
             };
             setStats(stats);
-
         } catch (error) {
             showSnackbar('Không thể tải danh sách người dùng: ' + (error.response?.data || error.message), 'error');
         } finally {
@@ -126,10 +113,10 @@ const UserManagementPage = () => {
         setActionLoading(prev => ({ ...prev, [userId]: true }));
         try {
             await UserService.toggleVerified(userId);
-            showSnackbar('Cập nhật trạng thái tài khoản thành công!', 'success');
+            toast.success('Cập nhật trạng thái tài khoản thanh cong!');
             fetchUsers();
         } catch (error) {
-            showSnackbar('Lỗi khi cập nhật: ' + (error.response?.data || error.message), 'error');
+            toast.error('Cập nhật trạng thái tài khoản không thành cong: ' + (error.response?.data || error.message));
         } finally {
             setActionLoading(prev => ({ ...prev, [userId]: false }));
         }
@@ -171,17 +158,6 @@ const UserManagementPage = () => {
         setSortBy(field);
     };
 
-    const handleMenuOpen = (event, user) => {
-        setAnchorEl(event.currentTarget);
-        setSelectedUserForMenu(user);
-    };
-
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-        setSelectedUserForMenu(null);
-    };
-
-
     const filteredAndSortedUsers = useMemo(() => {
         return users
             .filter((user) => user.roles?.includes('ROLE_USER'))
@@ -209,13 +185,10 @@ const UserManagementPage = () => {
             });
     }, [users, searchTerm, filterStatus, sortBy, sortOrder]);
 
-
-
     useEffect(() => {
         fetchUsers();
     }, [fetchUsers]);
 
-    // Loading skeleton
     const TableSkeleton = () => (
         <>
             {[...Array(rowsPerPage)].map((_, index) => (
@@ -233,315 +206,523 @@ const UserManagementPage = () => {
         </>
     );
 
+    const getCardStyle = (mode) => ({
+        background: mode === 'dark' ? 'rgba(29, 29, 29, 0.95)' : 'rgba(255,255,255,0.95)',
+        borderRadius: '20px',
+        padding: '32px',
+        boxShadow: mode === 'dark' ? '0 8px 32px rgba(0,0,0,0.3)' : '0 8px 32px rgba(0,0,0,0.1)',
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        backdropFilter: 'blur(20px)',
+        border: mode === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.2)',
+        position: 'relative',
+        overflow: 'hidden',
+        cursor: 'pointer'
+    });
+
+    const getHoverEffects = (e, mode, isEnter) => {
+        if (isEnter) {
+            e.currentTarget.style.transform = 'translateY(-12px) scale(1.03)';
+            e.currentTarget.style.boxShadow = mode === 'dark' ? '0 20px 40px rgba(0,0,0,0.4)' : '0 20px 40px rgba(0,0,0,0.15)';
+        } else {
+            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+            e.currentTarget.style.boxShadow = mode === 'dark' ? '0 8px 32px rgba(0,0,0,0.3)' : '0 8px 32px rgba(0,0,0,0.1)';
+        }
+    };
+
     return (
-        <Box sx={{ p: 3, maxWidth: '1400px', mx: 'auto' }}>
-            {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                    Quản lý Tài khoản
-                </Typography>
-            </Box>
+        <Box sx={{
+            p: 4,
+            maxWidth: '1400px',
+            mx: 'auto',
+            background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, #121212 0%, #1d1d1d 100%)'
+                : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            minHeight: '100vh',
+            color: theme.palette.text.primary
+        }}>
+            {/* Header Section */}
+            <div style={{
+                marginBottom: "40px",
+                textAlign: 'center',
+                position: 'relative'
+            }}>
+                <div style={{
+                    position: 'absolute',
+                    top: -50,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: 200,
+                    height: 200,
+                    borderRadius: '50%',
+                    background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(135deg, rgba(118, 75, 162, 0.2) 0%, rgba(102, 126, 234, 0.2) 100%)'
+                        : 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                    filter: 'blur(40px)',
+                    zIndex: -1
+                }} />
+
+                <h1 style={{
+                    fontSize: "3.5rem",
+                    fontWeight: "900",
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    margin: "0 0 16px 0",
+                    textShadow: theme.palette.mode === 'dark'
+                        ? '0 4px 8px rgba(255,255,255,0.1)'
+                        : '0 4px 8px rgba(0,0,0,0.1)',
+                    letterSpacing: '-0.02em'
+                }}>
+                    👥 Quản lý Tài khoản
+                </h1>
+                <p style={{
+                    color: theme.palette.text.secondary,
+                    fontSize: "1.25rem",
+                    fontWeight: 500,
+                    opacity: 0.8,
+                    maxWidth: '600px',
+                    margin: '0 auto'
+                }}>
+                    Quản lý và theo dõi tất cả tài khoản người dùng trong hệ thống
+                </p>
+
+                {/* Decorative Elements */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '16px',
+                    marginTop: '24px'
+                }}>
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            opacity: 0.6,
+                            animation: `pulse ${2 + i * 0.5}s infinite`
+                        }} />
+                    ))}
+                </div>
+            </div>
 
             {/* Stats Cards */}
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={12} sm={6} md={3}>
-                    <Card>
-                        <CardContent sx={{ textAlign: 'center' }}>
-                            <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
-                                {stats.total}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '24px',
+                marginBottom: '32px'
+            }}>
+                {/* Total Users Card */}
+                <div
+                    style={getCardStyle(theme.palette.mode)}
+                    onMouseEnter={(e) => getHoverEffects(e, theme.palette.mode, true)}
+                    onMouseLeave={(e) => getHoverEffects(e, theme.palette.mode, false)}
+                >
+                    <div style={{
+                        position: 'absolute',
+                        top: -20,
+                        right: -20,
+                        width: 100,
+                        height: 100,
+                        borderRadius: '50%',
+                        background: theme.palette.mode === 'dark'
+                            ? 'rgba(102, 126, 234, 0.2)'
+                            : 'rgba(102, 126, 234, 0.1)',
+                        opacity: 0.3,
+                        transition: 'all 0.4s ease'
+                    }} />
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: 'relative', zIndex: 3 }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{
+                                color: theme.palette.text.secondary,
+                                fontSize: "0.875rem",
+                                fontWeight: 600,
+                                marginBottom: "12px",
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                opacity: 0.8
+                            }}>
                                 Tổng số người dùng
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <Card>
-                        <CardContent sx={{ textAlign: 'center' }}>
-                            <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
-                                {stats.verified}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            </div>
+                            <div style={{
+                                fontSize: "2.5rem",
+                                fontWeight: "800",
+                                color: theme.palette.primary.main,
+                                marginBottom: "12px",
+                                textShadow: theme.palette.mode === 'dark'
+                                    ? '0 2px 4px rgba(102, 126, 234, 0.3)'
+                                    : '0 2px 4px rgba(102, 126, 234, 0.2)'
+                            }}>
+                                {stats.total}
+                            </div>
+                        </div>
+                        <div style={{
+                            width: "72px",
+                            height: "72px",
+                            borderRadius: "20px",
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                            fontSize: "28px",
+                            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4)'
+                        }}>
+                            👥
+                        </div>
+                    </div>
+                </div>
+
+                {/* Verified Users Card */}
+                <div
+                    style={getCardStyle(theme.palette.mode)}
+                    onMouseEnter={(e) => getHoverEffects(e, theme.palette.mode, true)}
+                    onMouseLeave={(e) => getHoverEffects(e, theme.palette.mode, false)}
+                >
+                    <div style={{
+                        position: 'absolute',
+                        top: -20,
+                        right: -20,
+                        width: 100,
+                        height: 100,
+                        borderRadius: '50%',
+                        background: theme.palette.mode === 'dark'
+                            ? 'rgba(76, 175, 80, 0.2)'
+                            : 'rgba(76, 175, 80, 0.1)',
+                        opacity: 0.3,
+                        transition: 'all 0.4s ease'
+                    }} />
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: 'relative', zIndex: 3 }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{
+                                color: theme.palette.text.secondary,
+                                fontSize: "0.875rem",
+                                fontWeight: 600,
+                                marginBottom: "12px",
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                opacity: 0.8
+                            }}>
                                 Đã xác minh
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <Card>
-                        <CardContent sx={{ textAlign: 'center' }}>
-                            <Typography variant="h4" color="warning.main" sx={{ fontWeight: 'bold' }}>
-                                {stats.unverified}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            </div>
+                            <div style={{
+                                fontSize: "2.5rem",
+                                fontWeight: "800",
+                                color: '#4CAF50',
+                                marginBottom: "12px",
+                                textShadow: theme.palette.mode === 'dark'
+                                    ? '0 2px 4px rgba(76, 175, 80, 0.3)'
+                                    : '0 2px 4px rgba(76, 175, 80, 0.2)'
+                            }}>
+                                {stats.verified}
+                            </div>
+                        </div>
+                        <div style={{
+                            width: "72px",
+                            height: "72px",
+                            borderRadius: "20px",
+                            background: 'linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%)',
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                            fontSize: "28px",
+                            boxShadow: '0 8px 32px rgba(76, 175, 80, 0.4)'
+                        }}>
+                            ✅
+                        </div>
+                    </div>
+                </div>
+
+                {/* Unverified Users Card */}
+                <div
+                    style={getCardStyle(theme.palette.mode)}
+                    onMouseEnter={(e) => getHoverEffects(e, theme.palette.mode, true)}
+                    onMouseLeave={(e) => getHoverEffects(e, theme.palette.mode, false)}
+                >
+                    <div style={{
+                        position: 'absolute',
+                        top: -20,
+                        right: -20,
+                        width: 100,
+                        height: 100,
+                        borderRadius: '50%',
+                        background: theme.palette.mode === 'dark'
+                            ? 'rgba(255, 152, 0, 0.2)'
+                            : 'rgba(255, 152, 0, 0.1)',
+                        opacity: 0.3,
+                        transition: 'all 0.4s ease'
+                    }} />
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: 'relative', zIndex: 3 }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{
+                                color: theme.palette.text.secondary,
+                                fontSize: "0.875rem",
+                                fontWeight: 600,
+                                marginBottom: "12px",
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                opacity: 0.8
+                            }}>
                                 Chưa xác minh
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <Card>
-                        <CardContent sx={{ textAlign: 'center' }}>
-                            <Typography variant="h4" color="info.main" sx={{ fontWeight: 'bold' }}>
-                                {stats.newToday}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Mới hôm nay
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
-
-            {/* Search and Filters */}
-            <Card sx={{ mb: 3, p: 2 }}>
-                <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} md={6}>
-                        <TextField
-                            fullWidth
-                            label="Tìm kiếm người dùng"
-                            variant="outlined"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            InputProps={{
-                                startAdornment: <Search sx={{ mr: 1, color: 'action.active' }} />,
-                                endAdornment: searchTerm && (
-                                    <IconButton size="small" onClick={() => setSearchTerm('')}>
-                                        <Clear />
-                                    </IconButton>
-                                )
-                            }}
-                            placeholder="Tìm theo tên, email, họ tên hoặc số điện thoại"
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                        <FormControl fullWidth>
-                            <InputLabel>Trạng thái</InputLabel>
-                            <Select
-                                value={filterStatus}
-                                onChange={(e) => setFilterStatus(e.target.value)}
-                                label="Trạng thái"
-                            >
-                                <MenuItem value="all">Tất cả</MenuItem>
-                                <MenuItem value="verified">Đã xác minh</MenuItem>
-                                <MenuItem value="unverified">Chưa xác minh</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-
-                </Grid>
-
-            </Card>
-
-            {/* Results Info */}
-            {!loading && (
-                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">
-                        Hiển thị {Math.min(page * rowsPerPage + 1, filteredAndSortedUsers.length)} - {Math.min((page + 1) * rowsPerPage, filteredAndSortedUsers.length)}
-                        {' '}trong tổng số {filteredAndSortedUsers.length} người dùng
-                    </Typography>
-                    <TablePagination
-                        component="div"
-                        count={filteredAndSortedUsers.length}
-                        page={page}
-                        onPageChange={(event, newPage) => setPage(newPage)}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={(event) => {
-                            setRowsPerPage(parseInt(event.target.value, 10));
-                            setPage(0);
-                        }}
-                        labelRowsPerPage="Số dòng mỗi trang:"
-                        labelDisplayedRows={({ from, to, count }) => `${from}-${to} của ${count}`}
-                    />
-                </Box>
-            )}
+                            </div>
+                            <div style={{
+                                fontSize: "2.5rem",
+                                fontWeight: "800",
+                                color: '#FF9800',
+                                marginBottom: "12px",
+                                textShadow: theme.palette.mode === 'dark'
+                                    ? '0 2px 4px rgba(255, 152, 0, 0.3)'
+                                    : '0 2px 4px rgba(255, 152, 0, 0.2)'
+                            }}>
+                                {stats.unverified}
+                            </div>
+                        </div>
+                        <div style={{
+                            width: "72px",
+                            height: "72px",
+                            borderRadius: "20px",
+                            background: 'linear-gradient(135deg, #FF9800 0%, #FFC107 100%)',
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                            fontSize: "28px",
+                            boxShadow: '0 8px 32px rgba(255, 152, 0, 0.4)'
+                        }}>
+                            ⚠️
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Table */}
-            <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Avatar</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>
-                                <TableSortLabel
-                                    active={sortBy === 'username'}
-                                    direction={sortBy === 'username' ? sortOrder : 'asc'}
-                                    onClick={() => handleSort('username')}
-                                >
-                                    Tên đăng nhập
-                                </TableSortLabel>
-                            </TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>
-                                <TableSortLabel
-                                    active={sortBy === 'email'}
-                                    direction={sortBy === 'email' ? sortOrder : 'asc'}
-                                    onClick={() => handleSort('email')}
-                                >
-                                    Email
-                                </TableSortLabel>
-                            </TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>
-                                <TableSortLabel
-                                    active={sortBy === 'fullName'}
-                                    direction={sortBy === 'fullName' ? sortOrder : 'asc'}
-                                    onClick={() => handleSort('fullName')}
-                                >
-                                    Họ tên
-                                </TableSortLabel>
-                            </TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Liên hệ</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Trạng thái</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>Thao tác</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {loading ? (
-                            <TableSkeleton />
-                        ) : filteredAndSortedUsers.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4 }}>
-                                    <Typography variant="body1" color="text.secondary">
-                                        Không tìm thấy người dùng nào
-                                    </Typography>
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            filteredAndSortedUsers
-                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((user) => (
-                                    <TableRow key={user.id} hover>
-                                        <TableCell>
-                                            <Badge
-                                                overlap="circular"
-                                                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                                                badgeContent={
-                                                    user.verified ?
-                                                        <CheckCircle color="success" sx={{ fontSize: 16 }} /> :
-                                                        <Warning color="warning" sx={{ fontSize: 16 }} />
-                                                }
-                                            >
-                                                <Avatar
-                                                    src={
-                                                        user.avatar
-                                                            ? `${import.meta.env.VITE_API_BASE_URL_GG}uploads/avatar/${user.avatar}`
-                                                            : '/images/default-avatar.png'
-                                                    }
-                                                    alt={user.username}
-                                                    sx={{ width: 50, height: 50 }}
-                                                />
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Box>
-                                                <Typography variant="body2" fontWeight="medium">
-                                                    {user.username}
-                                                </Typography>
-                                                {user.createdAt && (
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        Tham gia: {new Date(user.createdAt).toLocaleDateString('vi-VN')}
-                                                    </Typography>
-                                                )}
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Email sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                                <Typography variant="body2">
-                                                    {user.email}
-                                                </Typography>
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography variant="body2" fontWeight="medium">
-                                                {user.fullName}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                {user.phoneNumber && (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                        <Phone sx={{ fontSize: 14, color: 'text.secondary' }} />
-                                                        <Typography variant="caption">
-                                                            {user.phoneNumber}
-                                                        </Typography>
-                                                    </Box>
-                                                )}
-                                                {user.address && (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                        <LocationOn sx={{ fontSize: 14, color: 'text.secondary' }} />
-                                                        <Typography
-                                                            variant="caption"
-                                                            sx={{
-                                                                maxWidth: 150,
-                                                                overflow: 'hidden',
-                                                                textOverflow: 'ellipsis',
-                                                                whiteSpace: 'nowrap'
-                                                            }}
-                                                        >
-                                                            {user.address}
-                                                        </Typography>
-                                                    </Box>
-                                                )}
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                label={user.verified ? 'Đã xác minh' : 'Chưa xác minh'}
-                                                color={user.verified ? 'success' : 'warning'}
-                                                size="small"
-                                                icon={user.verified ? <CheckCircle /> : <Warning />}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                <Tooltip title="Xem chi tiết">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => {
-                                                            setSelectedUser(user);
-                                                            setShowUserDialog(true);
-                                                        }}
-                                                    >
-                                                        <Visibility fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
+            <div style={{
+                background: theme.palette.mode === 'dark'
+                    ? 'rgba(29, 29, 29, 0.95)'
+                    : 'rgba(255,255,255,0.95)',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                boxShadow: theme.palette.mode === 'dark'
+                    ? '0 8px 32px rgba(0,0,0,0.3)'
+                    : '0 8px 32px rgba(0,0,0,0.1)',
+                backdropFilter: 'blur(20px)',
+                border: theme.palette.mode === 'dark'
+                    ? '1px solid rgba(255,255,255,0.1)'
+                    : '1px solid rgba(255,255,255,0.2)',
+                position: 'relative'
+            }}>
+                <div style={{
+                    position: 'absolute',
+                    bottom: -100,
+                    left: -100,
+                    width: 200,
+                    height: 200,
+                    borderRadius: '50%',
+                    background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)'
+                        : 'linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(139, 195, 74, 0.05) 100%)',
+                    filter: 'blur(60px)',
+                    zIndex: 0
+                }} />
 
-                                                <Tooltip title={user.verified ? "Vô hiệu hóa" : "Kích hoạt"}>
-                                                    <span>
+                <TableContainer component="div" sx={{ position: 'relative', zIndex: 1 }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow sx={{
+                                background: theme.palette.mode === 'dark'
+                                    ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)'
+                                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                '& th': {
+                                    color: 'white',
+                                    fontWeight: 700,
+                                    fontSize: '0.875rem',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                    border: 'none',
+                                    padding: '20px 16px'
+                                }
+                            }}>
+                                <TableCell>👤 Avatar</TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={sortBy === 'username'}
+                                        direction={sortBy === 'username' ? sortOrder : 'asc'}
+                                        onClick={() => handleSort('username')}
+                                        sx={{ color: 'white', '&.Mui-active': { color: 'white' } }}
+                                    >
+                                        🔑 Tên đăng nhập
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={sortBy === 'email'}
+                                        direction={sortBy === 'email' ? sortOrder : 'asc'}
+                                        onClick={() => handleSort('email')}
+                                        sx={{ color: 'white', '&.Mui-active': { color: 'white' } }}
+                                    >
+                                        📧 Email
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={sortBy === 'fullName'}
+                                        direction={sortBy === 'fullName' ? sortOrder : 'asc'}
+                                        onClick={() => handleSort('fullName')}
+                                        sx={{ color: 'white', '&.Mui-active': { color: 'white' } }}
+                                    >
+                                        👨‍💼 Họ tên
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>📞 Liên hệ</TableCell>
+                                <TableCell>📊 Trạng thái</TableCell>
+                                <TableCell sx={{ textAlign: 'center' }}>⚙️ Thao tác</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {loading ? (
+                                <TableSkeleton />
+                            ) : filteredAndSortedUsers.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4 }}>
+                                        <Typography variant="body1" color="text.secondary">
+                                            Không tìm thấy người dùng nào
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                filteredAndSortedUsers
+                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                    .map((user) => (
+                                        <TableRow key={user.id} hover>
+                                            <TableCell>
+                                                <Badge
+                                                    overlap="circular"
+                                                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                                    badgeContent={
+                                                        user.verified ?
+                                                            <CheckCircle color="success" sx={{ fontSize: 16 }} /> :
+                                                            <Warning color="warning" sx={{ fontSize: 16 }} />
+                                                    }
+                                                >
+                                                    <Avatar
+                                                        src={
+                                                            user.avatar
+                                                                ? `${import.meta.env.VITE_API_BASE_URL_GG}uploads/avatar/${user.avatar}`
+                                                                : '/images/default-avatar.png'
+                                                        }
+                                                        alt={user.username}
+                                                        sx={{ width: 50, height: 50 }}
+                                                    />
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Box>
+                                                    <Typography variant="body2" fontWeight="medium">
+                                                        {user.username}
+                                                    </Typography>
+                                                    {user.createdAt && (
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            Tham gia: {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Email sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                                    <Typography variant="body2">
+                                                        {user.email}
+                                                    </Typography>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="body2" fontWeight="medium">
+                                                    {user.fullName}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                    {user.phoneNumber && (
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            <Phone sx={{ fontSize: 14, color: 'text.secondary' }} />
+                                                            <Typography variant="caption">
+                                                                {user.phoneNumber}
+                                                            </Typography>
+                                                        </Box>
+                                                    )}
+                                                    {user.address && (
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            <LocationOn sx={{ fontSize: 14, color: 'text.secondary' }} />
+                                                            <Typography
+                                                                variant="caption"
+                                                                sx={{
+                                                                    maxWidth: 150,
+                                                                    overflow: 'hidden',
+                                                                    textOverflow: 'ellipsis',
+                                                                    whiteSpace: 'nowrap'
+                                                                }}
+                                                            >
+                                                                {user.address}
+                                                            </Typography>
+                                                        </Box>
+                                                    )}
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Chip
+                                                    label={user.verified ? 'Đã xác minh' : 'Chưa xác minh'}
+                                                    color={user.verified ? 'success' : 'warning'}
+                                                    size="small"
+                                                    icon={user.verified ? <CheckCircle /> : <Warning />}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                    <Tooltip title="Xem chi tiết">
                                                         <IconButton
                                                             size="small"
-                                                            onClick={() => toggleVerified(user.id)}
-                                                            disabled={actionLoading[user.id]}
-                                                            color={user.verified ? 'error' : 'success'}
+                                                            onClick={() => {
+                                                                setSelectedUser(user);
+                                                                setShowUserDialog(true);
+                                                            }}
                                                         >
-                                                            {actionLoading[user.id] ? (
-                                                                <CircularProgress size={16} />
-                                                            ) : user.verified ? (
-                                                                <Block fontSize="small" />
-                                                            ) : (
-                                                                <CheckCircle fontSize="small" />
-                                                            )}
+                                                            <Visibility fontSize="small" />
                                                         </IconButton>
-                                                    </span>
-                                                </Tooltip>
+                                                    </Tooltip>
 
-                                                <Tooltip title="Thêm thao tác">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={(e) => handleMenuOpen(e, user)}
-                                                    >
-                                                        <MoreVert fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                                                    <Tooltip title={user.verified ? "Vô hiệu hóa" : "Kích hoạt"}>
+                            <span>
+                              <IconButton
+                                  size="small"
+                                  onClick={() => toggleVerified(user.id)}
+                                  disabled={actionLoading[user.id]}
+                                  color={user.verified ? 'error' : 'success'}
+                              >
+                                {actionLoading[user.id] ? (
+                                    <CircularProgress size={16} />
+                                ) : user.verified ? (
+                                    <Block fontSize="small" />
+                                ) : (
+                                    <CheckCircle fontSize="small" />
+                                )}
+                              </IconButton>
+                            </span>
+                                                    </Tooltip>
+                                                </Box>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </div>
 
             {/* User Detail Dialog */}
             <Dialog
@@ -661,88 +842,6 @@ const UserManagementPage = () => {
                 </DialogActions>
             </Dialog>
 
-            {/* Delete Confirmation Dialog */}
-            <Dialog
-                open={showDeleteDialog}
-                onClose={() => setShowDeleteDialog(false)}
-                maxWidth="sm"
-                fullWidth
-            >
-                <DialogTitle>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Warning color="warning" />
-                        Xác nhận xóa người dùng
-                    </Box>
-                </DialogTitle>
-                <DialogContent>
-                    <Typography>
-                        Bạn có chắc chắn muốn xóa người dùng này? Hành động này không thể hoàn tác.
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setShowDeleteDialog(false)}>
-                        Hủy
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="error"
-                        onClick={deleteUser}
-                        disabled={actionLoading[deleteUserId]}
-                        startIcon={actionLoading[deleteUserId] ? <CircularProgress size={20} /> : <Delete />}
-                    >
-                        Xóa
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Action Menu */}
-            <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            >
-                <MenuItem onClick={() => {
-                    if (selectedUserForMenu) {
-                        setSelectedUser(selectedUserForMenu);
-                        setShowUserDialog(true);
-                        handleMenuClose();
-                    }
-                }}>
-                    <ListItemIcon><Visibility fontSize="small" /></ListItemIcon>
-                    <ListItemText>Xem chi tiết</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={() => {
-                    if (selectedUserForMenu) {
-                        sendEmail(selectedUserForMenu.id, selectedUserForMenu.email);
-                        handleMenuClose();
-                    }
-                }}>
-                    <ListItemIcon><Email fontSize="small" /></ListItemIcon>
-                    <ListItemText>Gửi email</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={() => {
-                    handleMenuClose();
-                }}>
-
-                </MenuItem>
-                <Divider />
-                <MenuItem
-                    onClick={() => {
-                        if (selectedUserForMenu) {
-                            setDeleteUserId(selectedUserForMenu.id);
-                            setShowDeleteDialog(true);
-                            handleMenuClose();
-                        }
-                    }}
-                    sx={{ color: 'error.main' }}
-                >
-                    <ListItemIcon><Delete fontSize="small" color="error" /></ListItemIcon>
-                    <ListItemText>Xóa người dùng</ListItemText>
-                </MenuItem>
-            </Menu>
-
             {/* Floating Action Button for mobile */}
             <Fab
                 color="primary"
@@ -751,7 +850,17 @@ const UserManagementPage = () => {
                     position: 'fixed',
                     bottom: 16,
                     right: 16,
-                    display: { xs: 'flex', md: 'none' }
+                    display: { xs: 'flex', md: 'none' },
+                    background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)'
+                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    '&:hover': {
+                        background: theme.palette.mode === 'dark'
+                            ? 'linear-gradient(135deg, #8a5bb8 0%, #7a8ff0 100%)'
+                            : 'linear-gradient(135deg, #7a8ff0 0%, #8a5bb8 100%)',
+                        transform: 'scale(1.1)'
+                    },
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
                 onClick={() => {/* TODO: Add new user */}}
             >
@@ -786,6 +895,15 @@ const UserManagementPage = () => {
                 draggable
                 pauseOnHover
             />
+
+            {/* CSS Animations */}
+            <style>{`
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 0.7; }
+          50% { transform: scale(1.1); opacity: 0.3; }
+          100% { transform: scale(1); opacity: 0.7; }
+        }
+      `}</style>
         </Box>
     );
 };

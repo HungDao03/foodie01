@@ -18,7 +18,6 @@ const useSearchStore = create((set) => ({
         set({ isSearching: true });
         try {
             const response = await FoodItemsService.searchFoods(keyword);
-            console.log('API response:', response); // Debug API response
             set({ isSearching: false });
             if (response.data && response.data.length > 0) {
                 set({ searchResults: response.data, searchKeyword: keyword });
@@ -27,7 +26,6 @@ const useSearchStore = create((set) => ({
                 toast.info('Không tìm thấy món ăn nào!');
             }
         } catch (error) {
-            console.error('Search error:', error);
             set({ isSearching: false, searchResults: [], searchKeyword: keyword });
             toast.error('Lỗi khi tìm kiếm: ' + (error.response?.data?.message || error.message));
         }

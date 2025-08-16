@@ -88,9 +88,7 @@ export default function CartPage() {
       setLoading(true);
       const response = await CartService.getCart(userId);
       setCart(response.data);
-      console.log('Cart Response Data:', response.data);
     } catch (error) {
-      console.error('Error loading cart:', error);
       toast.error('Không thể tải giỏ hàng');
     } finally {
       setLoading(false);
@@ -222,14 +220,11 @@ export default function CartPage() {
     if (selectedItems.length === 0) return;
     setOrderLoading(true);
     try {
-      console.log('Selected Items to Remove:', selectedItems);
       const response = await CartService.removeSelectedItems(userId, selectedItems);
-      console.log('Remove Response:', response.data);
       await loadCart();
       setSelectedItems([]);
       toast.success('✅ Đã xóa các món đã chọn khỏi giỏ hàng');
     } catch (error) {
-      console.error('Error removing selected items:', error.response?.data || error.message);
       toast.error('Không thể xóa các món đã chọn');
     } finally {
       setOrderLoading(false);

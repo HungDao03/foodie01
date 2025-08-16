@@ -15,6 +15,7 @@ import {
     Tooltip,
     CircularProgress,
 } from '@mui/material';
+
 import { styled, alpha, useTheme } from '@mui/material/styles';
 import {
     Menu as MenuIcon,
@@ -34,7 +35,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import useThemeStore from "../../../store/dark-light.jsx";
 import useSearchStore from "../../../store/searchStore.jsx";
 import authService from "../../../../service/authService.js";
-import * as PropTypes from "prop-types";
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
     background:
@@ -82,15 +82,12 @@ function SearchIconWrapper() {
     return null;
 }
 
-SearchIconWrapper.propTypes = {children: PropTypes.node};
-
 function Header({ onToggleSidebar }) {
     const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState(null);
     const { searchKeyword, setSearchKeyword, isSearching, searchFoods, clearSearch } = useSearchStore();
     const { isDarkMode, toggleTheme } = useThemeStore();
     const theme = useTheme();
-    const unreadCount = 0;
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -98,6 +95,10 @@ function Header({ onToggleSidebar }) {
 
     const handleProfileMenuClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleNotificationClick = () => {
+        toast.info('Chức năng thông báo đang phát triển!');
     };
 
     const handleLogout = () => {
@@ -111,7 +112,14 @@ function Header({ onToggleSidebar }) {
 
     const handleProfile = () => {
         handleProfileMenuClose();
-        navigate('/admin/profile');
+        // Kiểm tra role từ AuthService
+        const isAdmin = authService.isAdmin();
+
+        if (isAdmin) {
+            navigate('/admin/account');
+        } else {
+            navigate('/user/account');
+        }
     };
 
     const handleSettings = () => {
@@ -217,14 +225,28 @@ function Header({ onToggleSidebar }) {
                         <Tooltip title="Thông báo">
                             <IconButton
                                 color="inherit"
-                                onClick={() => toast('Chức năng đang phát triển')}
-                                aria-label={`${unreadCount} thông báo mới`}
+                                onClick={handleNotificationClick}
+                                aria-label="Thông báo"
+                                sx={{
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    '&:hover': {
+                                        transform: 'scale(1.1)',
+                                        backgroundColor: alpha(theme.palette.common.white, 0.1),
+                                        '& .MuiSvgIcon-root': {
+                                            transform: 'rotate(15deg)',
+                                        },
+                                    },
+                                    '& .MuiSvgIcon-root': {
+                                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        fontSize: '1.5rem',
+                                    },
+                                }}
                             >
-                                <Badge badgeContent={unreadCount} color="error">
-                                    <NotificationsIcon />
-                                </Badge>
+                                <NotificationsIcon />
                             </IconButton>
                         </Tooltip>
+
+
 
                         <Tooltip title="Tài khoản">
                             <IconButton

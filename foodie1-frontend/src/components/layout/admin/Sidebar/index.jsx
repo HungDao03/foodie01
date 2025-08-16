@@ -13,10 +13,10 @@ import PeopleIcon from "@mui/icons-material/People";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CategoryIcon from "@mui/icons-material/Category";
-import AnalyticsIcon from "@mui/icons-material/Analytics";
+import ChatIcon from "@mui/icons-material/Chat";
 
-import {useNavigate, useLocation} from "react-router-dom";
-import {toast} from "react-toastify";
+import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const StyledBox = styled(Box)(({ theme }) => ({
     background: theme.palette.background.paper,
@@ -103,16 +103,13 @@ function AdminSidebar({ onNavigate }) {
         { text: "Quản lý món ăn", icon: <InventoryIcon fontSize="inherit" />, path: "/admin/fooditems" },
         { text: "Quản lý danh mục", icon: <CategoryIcon fontSize="inherit" />, path: "/admin/categories" },
         { text: "Quản lý đơn hàng", icon: <ShoppingCartIcon fontSize="inherit" />, path: "/admin/orders" },
-        { text: "Báo cáo & Thống kê", icon: <AnalyticsIcon fontSize="inherit" />,onclick: ()=>toast.info("Chức năng ang phát triển") },
+        { text: "Nhắn tin", icon: <ChatIcon fontSize="inherit" />, path: "/admin/chat" },
     ];
-
-
-
 
     return (
         <StyledBox>
             <GreetingText className="greeting-text">
-                ‍♂️ Xin chào, {user.fullName ||user.name }
+                🙋‍♂️ Xin chào, {user?.fullName || user?.name || "Khách"}
             </GreetingText>
 
             <List sx={{ p: 0 }}>
@@ -120,8 +117,8 @@ function AdminSidebar({ onNavigate }) {
                     <ListItem key={index} disablePadding sx={{ display: 'flex', justifyContent: 'center' }}>
                         <StyledListItemButton
                             onClick={() => {
-                                if (item.onclick) {
-                                    item.onclick();
+                                if (item.onClick) {
+                                    item.onClick();
                                 } else if (item.path) {
                                     navigate(item.path);
                                     if (onNavigate) onNavigate();
@@ -140,8 +137,6 @@ function AdminSidebar({ onNavigate }) {
                 ))}
 
                 <SectionDivider />
-
-
             </List>
         </StyledBox>
     );

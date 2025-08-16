@@ -11,12 +11,10 @@ import HomeIcon from "@mui/icons-material/Home";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import HistoryIcon from "@mui/icons-material/History";
+import ChatIcon from "@mui/icons-material/Chat";
 
 import { useNavigate, useLocation } from "react-router-dom";
-import {toast} from "react-toastify";
-
 const StyledBox = styled(Box)(({ theme }) => ({
     background: theme.palette.background.paper,
     backdropFilter: 'blur(10px)',
@@ -90,8 +88,9 @@ function Sidebar({ onNavigate }) {
         { text: "Trang chủ", icon: <HomeIcon />, path: "/user" },
         { text: "Tài khoản", icon: <AccountCircleIcon />, path: "/user/account" },
         { text: "Giỏ hàng", icon: <ShoppingCartIcon />, path: "/user/cart" },
-        { text: "Yêu thích", icon: <FavoriteIcon />,path: "/user/favorites" },
+        { text: "Yêu thích", icon: <FavoriteIcon />, path: "/user/favorites" },
         { text: "Lịch sử đặt hàng", icon: <HistoryIcon />, path: "/user/history" },
+        { text: "Nhắn tin", icon: <ChatIcon fontSize="inherit" />, path: "/user/chat" }
     ];
 
     return (
@@ -109,7 +108,7 @@ function Sidebar({ onNavigate }) {
                                     item.onClick();
                                 } else if (item.path) {
                                     navigate(item.path);
-                                    if (onNavigate) onNavigate(); // ✅ đóng Drawer khi chọn menu
+                                    if (onNavigate) onNavigate(); // Đóng Drawer khi chọn menu
                                 }
                             }}
                             active={location.pathname === item.path}

@@ -3,8 +3,28 @@ import {
     Box,
     Container,
     Button,
-    CircularProgress
+    CircularProgress,
+    Card,
+    CardContent,
+    useTheme,
+    alpha,
+    Grid,
+    Chip,
+    Avatar,
+    IconButton,
+    Tooltip,
+    Fade,
+    Grow
 } from "@mui/material";
+import {
+    LocalFireDepartment as FireIcon,
+    Search as SearchIcon,
+    Favorite as FavoriteIcon,
+    ShoppingCart as CartIcon,
+    TrendingUp as TrendingUpIcon,
+    Star as StarIcon,
+    Restaurant as RestaurantIcon
+} from "@mui/icons-material";
 import { useState, useEffect } from "react";
 
 import { toast } from "react-toastify";
@@ -16,6 +36,7 @@ import useSearchStore from "../../components/store/searchStore.jsx";
 import UserService from "../../service/userService.js";
 
 function FoodCardList() {
+    const theme = useTheme();
     const [selectedFood, setSelectedFood] = useState(null);
     const [orderModalOpen, setOrderModalOpen] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
@@ -177,44 +198,268 @@ function FoodCardList() {
         }
     };
 
+    const StatCard = ({ icon, title, value, color, gradient, subtitle }) => (
+        <Card elevation={0} sx={{
+            background: gradient || `linear-gradient(135deg, ${color}20 0%, ${color}10 100%)`,
+            borderRadius: 3,
+            border: `1px solid ${color}30`,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: `0 8px 25px ${color}40`,
+                border: `1px solid ${color}50`
+            }
+        }}>
+            <CardContent sx={{ p: 2.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        background: gradient || `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        {icon}
+                    </Box>
+                    <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            {title}
+                        </Typography>
+                        <Typography variant="h6" fontWeight="bold" color={color}>
+                            {value}
+                        </Typography>
+                        {subtitle && (
+                            <Typography variant="caption" color="text.secondary">
+                                {subtitle}
+                            </Typography>
+                        )}
+                    </Box>
+                </Box>
+            </CardContent>
+        </Card>
+    );
+
+    const EmptyState = () => (
+        <Card elevation={0} sx={{ 
+            textAlign: 'center', 
+            py: 8,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            color: 'white',
+            borderRadius: 4,
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            <Box sx={{
+                position: 'absolute',
+                top: -50,
+                right: -50,
+                width: 100,
+                height: 100,
+                borderRadius: '50%',
+                background: theme.palette.mode === 'dark' 
+                    ? 'rgba(118, 75, 162, 0.2)' 
+                    : 'rgba(255,255,255,0.1)',
+                animation: 'pulse 2s infinite'
+            }} />
+            <Box sx={{
+                position: 'absolute',
+                bottom: -30,
+                left: -30,
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                background: theme.palette.mode === 'dark' 
+                    ? 'rgba(118, 75, 162, 0.2)' 
+                    : 'rgba(255,255,255,0.1)',
+                animation: 'pulse 2s infinite 1s'
+            }} />
+            <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+                <RestaurantIcon sx={{ 
+                    fontSize: 80, 
+                    color: 'rgba(255,255,255,0.8)', 
+                    mb: 2,
+                    filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
+                }} />
+                <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
+                    Chưa có món ăn nào
+                </Typography>
+                <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                    Các món ăn sẽ hiển thị ở đây khi có sẵn
+                </Typography>
+            </CardContent>
+        </Card>
+    );
+
+    const LoadingSkeleton = () => (
+        <Card elevation={0} sx={{ 
+            background: theme.palette.mode === 'dark' 
+                ? 'rgba(255,255,255,0.05)' 
+                : 'rgba(0,0,0,0.02)',
+            borderRadius: 3
+        }}>
+            <Box sx={{ p: 3, background: 'rgba(255,255,255,0.1)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <CircularProgress size={40} />
+                    <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                        Đang tải món ăn...
+                    </Typography>
+                </Box>
+            </Box>
+        </Card>
+    );
+
     const displayFoods = searchKeyword ? searchResults : foods;
 
     return (
-        <Container maxWidth="xl">
-            <Box sx={{ mb: 4 }}>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
-                    🔥 Ưu đãi hôm nay
-                </Typography>
-                <Typography variant="subtitle1" sx={{ color: 'text.secondary', fontSize: '1.1rem' }}>
-                    Khám phá những món ăn ngon với giá ưu đãi đặc biệt
-                </Typography>
+        <Box sx={{ 
+            background: theme.palette.mode === 'dark' 
+                ? 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+                : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            minHeight: '100vh',
+            py: 3
+        }}>
+            <Container maxWidth="xl">
+                {/* Header Section */}
+                <Card elevation={0} sx={{ 
+                    mb: 3, 
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                    position: 'relative'
+                }}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+                        opacity: 0.3
+                    }} />
+                    <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Box>
+                                <Typography variant="h3" fontWeight="bold" sx={{ 
+                                    color: 'white', 
+                                    mb: 1,
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                }}>
+                                    🔥 Ưu đãi hôm nay
+                                </Typography>
+                                <Typography variant="h6" sx={{ 
+                                    color: 'rgba(255,255,255,0.9)',
+                                    fontWeight: 300
+                                }}>
+                                    Khám phá những món ăn ngon với giá ưu đãi đặc biệt
+                                </Typography>
+                            </Box>
+                            <Box display="flex" gap={2} alignItems="center">
+                                <Box sx={{
+                                    p: 2,
+                                    borderRadius: 3,
+                                    background: theme.palette.mode === 'dark' 
+                                        ? 'rgba(118, 75, 162, 0.1)' 
+                                        : 'rgba(255,255,255,0.1)',
+                                    backdropFilter: 'blur(10px)',
+                                    border: theme.palette.mode === 'dark' 
+                                        ? '1px solid rgba(118, 75, 162, 0.2)' 
+                                        : '1px solid rgba(255,255,255,0.2)'
+                                }}>
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                        <FireIcon sx={{ color: 'rgba(255,255,255,0.8)' }} />
+                                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                                            Món ăn nổi bật
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </CardContent>
+                </Card>
 
+                {/* Search Results Header */}
                 {searchKeyword && (
-                    <Typography variant="h6" sx={{ mt: 2, color: 'text.secondary' }}>
-                        Kết quả tìm kiếm cho "{searchKeyword}"
-                    </Typography>
+                    <Fade in={true} timeout={500}>
+                        <Card elevation={0} sx={{ 
+                            mb: 3, 
+                            background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+                            borderRadius: 3,
+                            overflow: 'hidden'
+                        }}>
+                            <CardContent sx={{ p: 2.5 }}>
+                                <Box display="flex" alignItems="center" gap={2}>
+                                    <SearchIcon sx={{ color: 'white', fontSize: 28 }} />
+                                    <Box>
+                                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                                            Kết quả tìm kiếm
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                                            Tìm thấy {searchResults.length} món ăn cho "{searchKeyword}"
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </Fade>
                 )}
-            </Box>
 
-            {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-                    <CircularProgress color="primary" />
-                </Box>
-            ) : (
-                <FoodGrid 
-                    foods={displayFoods} 
-                    onOrderClick={handleOrderClick}
-                    onFavoriteToggle={handleFavoriteToggle}
+                {/* Stats Cards */}
+                {foods.length > 0 && (
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 2, mb: 3 }}>
+                        <StatCard
+                            icon={<RestaurantIcon />}
+                            title="Tổng món ăn"
+                            value={foods.length}
+                            color={theme.palette.primary.main}
+                        />
+                        <StatCard
+                            icon={<FavoriteIcon />}
+                            title="Món yêu thích"
+                            value={foods.filter(f => f.favorite === 1).length}
+                            color="#E91E63"
+                        />
+                        <StatCard
+                            icon={<TrendingUpIcon />}
+                            title="Món nổi bật"
+                            value={foods.filter(f => f.featured).length || 0}
+                            color="#FF9800"
+                        />
+                        <StatCard
+                            icon={<StarIcon />}
+                            title="Đánh giá cao"
+                            value={foods.filter(f => f.rating >= 4).length || 0}
+                            color="#4CAF50"
+                        />
+                    </Box>
+                )}
+
+                {/* Content Section */}
+                {loading ? (
+                    <LoadingSkeleton />
+                ) : displayFoods.length === 0 ? (
+                    <EmptyState />
+                ) : (
+                    <Grow in={true} timeout={800}>
+                        <Box>
+                            <FoodGrid 
+                                foods={displayFoods} 
+                                onOrderClick={handleOrderClick}
+                                onFavoriteToggle={handleFavoriteToggle}
+                            />
+                        </Box>
+                    </Grow>
+                )}
+
+                <OrderModal
+                    open={orderModalOpen}
+                    onClose={() => setOrderModalOpen(false)}
+                    foodItem={selectedFood}
+                    userInfo={userInfo}
                 />
-            )}
-
-            <OrderModal
-                open={orderModalOpen}
-                onClose={() => setOrderModalOpen(false)}
-                foodItem={selectedFood}
-                userInfo={userInfo}
-            />
-        </Container>
+            </Container>
+        </Box>
     );
 }
 
