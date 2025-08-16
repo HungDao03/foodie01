@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 public enum OrderStatus {
     CONFIRMED("Đã xác nhận"),
-    DELIVERING("Đang giao hàng"),
     DELIVERED("Đã giao hàng"),
     CANCELLED("Đã hủy");
 

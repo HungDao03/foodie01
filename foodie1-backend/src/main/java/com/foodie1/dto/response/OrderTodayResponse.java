@@ -23,6 +23,10 @@ public class OrderTodayResponse {
     private String avatar;
     private String foodItemName;
     private OrderStatus status;
+    private String foodItemImageUrl;
+    private String notes;
+
+
 
     private java.util.List<OrderItemResponse> items;
 

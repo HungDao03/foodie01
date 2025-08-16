@@ -91,6 +91,16 @@ public class OrderController {
         return ResponseEntity.ok(mapper.toOrderResponse(order));
     }
 
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestBody StatusUpdateRequest request) {
+        Order order = orderService.updateOrderStatus(id, request.getStatus());
+        if (order == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(mapper.toOrderResponse(order));
+    }
+
     @PostMapping("/checkout")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<OrderResponse> checkoutOrder(@RequestBody OrderRequestDTO request) {

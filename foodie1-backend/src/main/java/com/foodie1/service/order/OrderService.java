@@ -203,7 +203,10 @@ public class OrderService implements IGenericService<Order> {
             resp.setPaymentMethod(order.getPaymentMethod());
             resp.setUsername(order.getUser() != null ? order.getUser().getUsername() : null);
             resp.setAvatar(order.getUser() != null ? order.getUser().getAvatar() : null);
-                resp.setStatus(order.getStatus());
+            resp.setStatus(order.getStatus());
+            resp.setFoodItemImageUrl(order.getFoodItem() != null ? order.getFoodItem().getImageUrl() : null);
+            resp.setNotes(order.getNotes());
+
             // Nếu là đơn ghép, map sang OrderItemResponse
             List<OrderItem> itemList = order.getOrderItems() != null ? order.getOrderItems() : order.getItems();
             if (itemList != null && !itemList.isEmpty()) {
