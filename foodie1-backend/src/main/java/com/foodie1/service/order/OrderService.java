@@ -195,7 +195,7 @@ public class OrderService implements IGenericService<Order> {
         for (Order order : orders) {
             OrderTodayResponse resp = new OrderTodayResponse();
             resp.setId(order.getId());
-            resp.setOrderTime(order.getOrderTime());
+            resp.setOrderTime(order.getOrderTime());    
             resp.setDeliveryAddress(order.getDeliveryAddress());
             resp.setPhoneNumber(order.getPhoneNumber());
             resp.setTotalAmount(order.getTotalAmount());

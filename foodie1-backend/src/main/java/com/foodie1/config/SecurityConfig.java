@@ -99,6 +99,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/all").hasRole("ADMIN")
                         .requestMatchers("/api/orders/**").authenticated()
                         .requestMatchers("/static/**", "/uploads/**", "/uploads/avatar/**", "/*.jpg", "/*.png", "/*.jpeg").permitAll()
+                        .requestMatchers("/ws/**", "/topic/**", "/queue/**", "/app/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

@@ -73,5 +73,15 @@ public class UserPrinciple implements UserDetails {
         // isVerified() trả về primitive boolean, không bao giờ null
         return user.isVerified();
     }
+    
+    // Thêm method để lấy userId
+    public Long getId() {
+        return user.getId();
+    }
+    
+    // Thêm method để lấy User object
+    public User getUser() {
+        return user;
+    }
 }
     

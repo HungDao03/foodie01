@@ -41,6 +41,9 @@ dependencies {
     implementation("com.google.auth:google-auth-library-oauth2-http:1.23.0")
     // Thư viện gửi email
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {
